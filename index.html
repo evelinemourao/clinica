@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="theme-color" content="#1B4F72"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Clínica Eveline"/>
+<title>Sistema Clínico – Eveline Mourão</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap');
+:root {
+  --bg:#0c0a09; --surface:#1c1917; --surface2:#292524; --border:#3a3733; --border2:#222;
+  --text:#e7e5e4; --text2:#a8a29e; --text3:#78716c;
+  --amber:#f59e0b; --blue:#1d4ed8; --red:#b91c1c; --green:#15803d; --teal:#0e7490;
+  --header:#1B4F72; --section:#60a5fa;
+  --label-bg:#1e2a35; --field-bg:#161412; --check-bg:#1a2030;
+  --safe-top:env(safe-area-inset-top,0px); --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text);font-size:13px;display:flex;flex-direction:column;}
+
+/* HEADER */
+.app-header{background:var(--header);padding:calc(var(--safe-top) + 8px) 14px 8px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-shrink:0;border-bottom:2px solid #2E86C1;z-index:100;}
+.hdr-left .lbl{font-size:9px;letter-spacing:.25em;color:#AED6F1;text-transform:uppercase;}
+.hdr-left h1{font-size:12px;font-weight:700;color:#fff;line-height:1.2;}
+.hdr-left .crp{font-size:9px;color:#AED6F1;}
+.hdr-right{display:flex;gap:5px;align-items:center;flex-shrink:0;}
+.btn{border:none;cursor:pointer;font-family:inherit;font-size:10px;font-weight:700;padding:5px 9px;border-radius:3px;transition:all .15s;white-space:nowrap;}
+.btn-ghost{background:rgba(255,255,255,.12);color:#fff;}
+.btn-save{background:#57534e;color:#fff;}
+.btn-save.ok{background:var(--green);}
+.btn-pdf{background:var(--red);color:#fff;}
+.btn-word{background:var(--blue);color:#fff;}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.prog-wrap{display:flex;align-items:center;gap:5px;}
+.prog-bar{width:50px;height:3px;background:rgba(255,255,255,.15);border-radius:2px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--amber);border-radius:2px;transition:width .4s;}
+.prog-pct{font-size:9px;color:var(--amber);font-weight:700;}
+
+/* LAYOUT */
+.app-body{display:flex;flex:1;overflow:hidden;}
+
+/* DOC TABS - left sidebar */
+.doc-tabs{width:200px;background:var(--surface);border-right:1px solid var(--border2);overflow-y:auto;flex-shrink:0;display:none;}
+@media(min-width:900px){.doc-tabs{display:flex;flex-direction:column;}}
+.tabs-group-label{font-size:9px;letter-spacing:.2em;color:var(--text3);text-transform:uppercase;padding:10px 12px 4px;border-top:1px solid var(--border2);margin-top:4px;}
+.tabs-group-label:first-child{border-top:none;margin-top:0;}
+.tab-btn{display:flex;align-items:center;gap:7px;padding:7px 12px;cursor:pointer;border-left:2px solid transparent;border:none;border-right:none;border-top:none;border-bottom:none;border-left:2px solid transparent;width:100%;background:none;font-family:inherit;font-size:10px;color:var(--text3);text-align:left;line-height:1.3;transition:all .15s;}
+.tab-btn:hover{color:var(--text2);background:var(--surface2);}
+.tab-btn.active{color:var(--amber);background:rgba(245,158,11,.08);border-left-color:var(--amber);}
+.tab-icon{font-size:12px;flex-shrink:0;}
+
+/* SECTION TABS - top within doc (anamnese etc) */
+.sec-tabs-wrap{background:var(--surface2);border-bottom:1px solid var(--border2);overflow-x:auto;flex-shrink:0;display:none;}
+@media(min-width:900px){.sec-tabs-wrap{display:flex;}}
+.sec-tabs{display:flex;gap:0;padding:0 8px;}
+.sec-tab{font-family:inherit;font-size:10px;padding:8px 12px;border:none;background:none;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;}
+.sec-tab:hover{color:var(--text2);}
+.sec-tab.active{color:var(--amber);border-bottom-color:var(--amber);}
+
+/* CONTENT */
+.content{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
+.content-inner{flex:1;padding:14px;max-width:820px;width:100%;margin:0 auto;padding-bottom:calc(var(--safe-bottom) + 70px);}
+
+/* Mobile selects */
+.mob-selects{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
+@media(min-width:900px){.mob-selects{display:none;}}
+.mob-sel{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:3px;font-family:inherit;font-size:12px;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23a8a29e' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border2);border-radius:4px;margin-bottom:12px;overflow:hidden;}
+.card-head{padding:12px 16px;border-bottom:1px solid var(--border2);display:flex;align-items:flex-start;gap:10px;}
+.card-icon{font-size:20px;color:var(--amber);flex-shrink:0;}
+.card-title{font-size:14px;font-weight:700;color:var(--text);}
+.card-sub{font-size:9px;color:var(--amber);opacity:.7;margin-top:2px;}
+.card-body{padding:16px;display:flex;flex-direction:column;gap:14px;}
+
+/* Fields */
+.fg{display:flex;flex-direction:column;gap:5px;}
+.flabel{font-size:9px;color:var(--text2);text-transform:uppercase;letter-spacing:.15em;}
+.finput,.ftextarea,.fselect{background:var(--field-bg);border:1px solid var(--border);color:var(--text);padding:8px 11px;border-radius:3px;font-family:inherit;font-size:12px;width:100%;transition:border-color .15s;-webkit-appearance:none;}
+.finput:focus,.ftextarea:focus,.fselect:focus{outline:none;border-color:var(--amber);}
+.ftextarea{min-height:72px;resize:vertical;}
+.fselect{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23a8a29e' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-color:var(--field-bg);padding-right:28px;cursor:pointer;}
+.fselect option{background:#1c1917;}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:500px){.frow{grid-template-columns:1fr;}}
+.frow3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+@media(max-width:600px){.frow3{grid-template-columns:1fr 1fr;}}
+
+/* Radio */
+.radio-grp{display:flex;gap:14px;flex-wrap:wrap;}
+.radio-opt{display:flex;align-items:center;gap:7px;cursor:pointer;}
+.radio-dot{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
+.radio-dot.on{border-color:var(--amber);background:var(--amber);}
+.radio-dot.on::after{content:'';width:6px;height:6px;border-radius:50%;background:#0c0a09;}
+.radio-lbl{font-size:12px;color:var(--text2);}
+
+/* Subsection */
+.sub-block{background:var(--check-bg);border:1px solid var(--border2);border-radius:3px;padding:12px;}
+.sub-title{font-size:10px;font-weight:700;color:var(--section);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;}
+.checks-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+@media(max-width:460px){.checks-grid{grid-template-columns:1fr;}}
+.chk-opt{display:flex;align-items:center;gap:9px;cursor:pointer;}
+.chk-box{width:16px;height:16px;border-radius:2px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
+.chk-box.on{border-color:var(--amber);background:var(--amber);}
+.chk-box.on::after{content:'✓';color:#0c0a09;font-size:10px;font-weight:900;line-height:1;}
+.chk-lbl{font-size:11px;color:var(--text2);line-height:1.3;}
+
+/* Section nav */
+.snav{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-top:1px solid var(--border2);}
+.snav-btn{font-family:inherit;font-size:10px;font-weight:700;padding:7px 14px;border-radius:3px;cursor:pointer;border:none;transition:all .15s;}
+.snav-prev{background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
+.snav-prev:hover:not(:disabled){color:var(--text);}
+.snav-prev:disabled{opacity:.3;cursor:not-allowed;}
+.snav-next{background:var(--amber);color:#0c0a09;font-weight:900;}
+.snav-next:hover:not(:disabled){background:#fbbf24;}
+.snav-next:disabled{opacity:.3;cursor:not-allowed;}
+.snav-cnt{font-size:10px;color:var(--text3);}
+
+/* Export panel */
+.exp-panel{background:var(--surface);border:1px solid var(--border2);border-radius:4px;padding:14px;margin-bottom:12px;}
+.exp-title{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.2em;margin-bottom:10px;}
+.exp-btns{display:flex;flex-direction:column;gap:7px;}
+@media(min-width:460px){.exp-btns{flex-direction:row;}}
+.exp-btn{flex:1;padding:11px;font-family:inherit;font-size:11px;font-weight:700;border:none;border-radius:3px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:7px;}
+.exp-pdf{background:var(--red);color:#fff;} .exp-pdf:hover{background:#dc2626;}
+.exp-word{background:var(--blue);color:#fff;} .exp-word:hover{background:#2563eb;}
+.exp-hint{font-size:9px;color:var(--text3);margin-top:8px;line-height:1.8;}
+.exp-hint strong{color:var(--text2);}
+
+/* Info box */
+.info-box{background:rgba(14,116,144,.1);border:1px solid rgba(14,116,144,.3);border-radius:3px;padding:10px 14px;font-size:10px;color:#67e8f9;line-height:1.7;}
+.warn-box{background:rgba(245,158,11,.05);border:1px solid rgba(245,158,11,.15);border-radius:3px;padding:10px 14px;font-size:10px;color:rgba(245,158,11,.6);text-align:center;}
+.divider{border:none;border-top:1px solid var(--border2);margin:4px 0;}
+
+/* iOS install banner */
+.install-banner{background:linear-gradient(135deg,#1B4F72,#154360);border:1px solid #2E86C1;border-radius:4px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.inst-txt{font-size:10px;color:#AED6F1;line-height:1.5;}
+.inst-txt strong{color:#fff;display:block;margin-bottom:1px;}
+.inst-btn{background:var(--amber);color:#0c0a09;font-family:inherit;font-size:10px;font-weight:700;padding:6px 10px;border:none;border-radius:3px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.inst-x{background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:0 3px;flex-shrink:0;}
+
+::-webkit-scrollbar{width:4px;} ::-webkit-scrollbar-track{background:var(--bg);} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="hdr-left">
+    <div class="lbl">Sistema Clínico</div>
+    <h1>Eveline Mourão</h1>
+    <div class="crp">Psicóloga · CRP 11/24832</div>
+  </div>
+  <div class="hdr-right">
+    <div class="prog-wrap">
+      <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+      <span class="prog-pct" id="progPct">0%</span>
+    </div>
+    <button class="btn btn-ghost" onclick="newForm()">Nova</button>
+    <button class="btn btn-save" id="saveBtn" onclick="saveAll()">Salvar</button>
+    <button class="btn btn-word" onclick="exportWord()">⬇ .doc</button>
+    <button class="btn btn-pdf" onclick="exportPDF()">⬇ PDF</button>
+  </div>
+</header>
+
+<div class="app-body">
+  <!-- LEFT SIDEBAR: Document list -->
+  <nav class="doc-tabs" id="docTabs"></nav>
+
+  <div class="content" id="mainContent">
+    <!-- TOP TABS: sections within a doc -->
+    <div class="sec-tabs-wrap" id="secTabsWrap"><div class="sec-tabs" id="secTabs"></div></div>
+    <div class="content-inner" id="contentInner"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// PROFESSIONAL INFO
+// ═══════════════════════════════════════════════════════════════
+const PROF = {
+  nome: "Eveline Mourão",
+  crp: "CRP 11/24832",
+  titulo: "Psicóloga / Neuropsicóloga",
+  cidade: "Fortaleza – CE",
+};
+
+// ═══════════════════════════════════════════════════════════════
+// DOCUMENT REGISTRY
+// ═══════════════════════════════════════════════════════════════
+const DOCS = [
+  { id:"anamnese",    label:"Anamnese",                   icon:"◈", group:"Avaliação" },
+  { id:"heteroanam", label:"Heteroanamnese",              icon:"◉", group:"Avaliação" },
+  { id:"obsClinica",  label:"Obs. Clínica",               icon:"◎", group:"Avaliação" },
+  { id:"protocolos",  label:"Protocolos de Testes",       icon:"◐", group:"Avaliação" },
+  { id:"planilha",    label:"Planilha de Correção",       icon:"◑", group:"Avaliação" },
+  { id:"tcle",        label:"TCLE",                       icon:"📋", group:"Termos" },
+  { id:"contrato",    label:"Contrato",                   icon:"📄", group:"Termos" },
+  { id:"autorizacao", label:"Autorização p/ Terceiros",   icon:"🤝", group:"Termos" },
+  { id:"termoMenor",  label:"Termo – Menor de Idade",     icon:"👶", group:"Termos" },
+  { id:"evolucao",    label:"Evolução de Sessão",         icon:"📝", group:"Sessões" },
+  { id:"devolutiva",  label:"Reg. de Devolutiva",         icon:"🔄", group:"Sessões" },
+  { id:"prontuario",  label:"Prontuário Psicológico",     icon:"🗂️", group:"Prontuário" },
+  { id:"checklist",   label:"Checklist de Documentos",   icon:"✅", group:"Prontuário" },
+  { id:"laudo",       label:"Laudo Neuropsicológico",     icon:"📊", group:"Documentos Finais" },
+  { id:"relatorio",   label:"Relatório",                  icon:"📃", group:"Documentos Finais" },
+  { id:"parecer",     label:"Parecer",                    icon:"⚖️", group:"Documentos Finais" },
+  { id:"declaracao",  label:"Declaração",                 icon:"📜", group:"Documentos Finais" },
+];
+
+// ═══════════════════════════════════════════════════════════════
+// DOCUMENT DEFINITIONS (sections + fields)
+// ═══════════════════════════════════════════════════════════════
+const DOC_DEFS = {};
+
+// ── ANAMNESE (18 sections) ──────────────────────────────────────
+DOC_DEFS.anamnese = {
+  sections: [
+    { id:"id", title:"1. Identificação", icon:"◈", fields:[
+      {id:"nome",label:"Nome completo",type:"text"},
+      {id:"dataNasc",label:"Data de nascimento",type:"date"},
+      {id:"idade",label:"Idade",type:"number"},
+      {id:"sexo",label:"Sexo",type:"select",options:["","Masculino","Feminino","Não-binário","Outro"]},
+      {id:"estadoCivil",label:"Estado civil",type:"select",options:["","Solteiro(a)","Casado(a)","Divorciado(a)","Viúvo(a)","União estável","Outro"]},
+      {id:"escolaridade",label:"Escolaridade",type:"select",options:["","Fundamental incompleto","Fundamental completo","Médio incompleto","Médio completo","Superior incompleto","Superior completo","Pós-graduação"]},
+      {id:"profissao",label:"Profissão",type:"text"},
+      {id:"telefone",label:"Telefone",type:"tel"},
+      {id:"email",label:"E-mail",type:"email"},
+      {id:"endereco",label:"Endereço",type:"textarea"},
+      {id:"encaminhamento",label:"Encaminhamento",type:"text"},
+    ]},
+    { id:"motivo", title:"2. Motivo da Avaliação", icon:"◉", fields:[
+      {id:"queixaPrincipal",label:"Queixa principal",type:"textarea"},
+      {id:"tempoOcorrencia",label:"Tempo de ocorrência",type:"text"},
+      {id:"motivoBusca",label:"Motivo da busca atual",type:"textarea"},
+      {id:"hipotesesPrev",label:"Hipóteses diagnósticas prévias",type:"textarea"},
+    ]},
+    { id:"queixa", title:"3. Queixa Clínica", icon:"◎",
+      subsections:[
+        {title:"Atenção / Funções Executivas",prefix:"atencao",checks:["Distração frequente","Procrastinação","Hiperfoco","Impulsividade","Dificuldade de organização","Inquietação interna"]},
+        {title:"Ansiedade",prefix:"ansiedade",checks:["Preocupação excessiva","Tensão muscular","Insônia","Pensamentos acelerados","Pânico"]},
+        {title:"Altas Habilidades / Superdotação",prefix:"altas",checks:["Aprendizado acelerado","Criatividade elevada","Tédio com baixa estimulação","Multipotencialidade","Perfeccionismo"]},
+      ],
+      tocFields:[
+        {id:"obsessoes",label:"Presença de obsessões?",type:"radio",options:["Sim","Não"]},
+        {id:"tiposObs",label:"Tipos de obsessões",type:"textarea"},
+        {id:"compulsoes",label:"Compulsões?",type:"radio",options:["Sim","Não"]},
+        {id:"tempoConsumido",label:"Tempo consumido por dia",type:"text"},
+        {id:"insightToc",label:"Insight",type:"select",options:["","Bom insight","Insight razoável","Insight pobre","Ausência de insight"]},
+      ]
+    },
+    { id:"desenv", title:"4. Desenvolvimento", icon:"◐", fields:[
+      {id:"gestacao",label:"Gestação",type:"textarea"},{id:"parto",label:"Parto",type:"textarea"},
+      {id:"marcos",label:"Marcos do desenvolvimento",type:"textarea"},{id:"atrasos",label:"Atrasos?",type:"textarea"},
+    ]},
+    { id:"escolar", title:"5. Escolar", icon:"◑", fields:[
+      {id:"desempenhoEsc",label:"Desempenho",type:"textarea"},{id:"dificuldadesEsc",label:"Dificuldades",type:"textarea"},
+      {id:"destaquesAcad",label:"Destaques acadêmicos",type:"textarea"},
+    ]},
+    { id:"ocup", title:"6. Ocupacional", icon:"◒", fields:[
+      {id:"profissaoAtual",label:"Profissão atual",type:"text"},{id:"dificFun",label:"Dificuldades funcionais",type:"textarea"},
+      {id:"histLaboral",label:"Histórico laboral",type:"textarea"},
+    ]},
+    { id:"mem", title:"7. Memória", icon:"◓", fields:[{id:"queixasCog",label:"Queixas cognitivas",type:"textarea"}]},
+    { id:"humor", title:"8. Humor", icon:"◔", fields:[
+      {id:"diagnostPrev",label:"Diagnósticos prévios",type:"textarea"},{id:"internacoes",label:"Internações",type:"textarea"},
+      {id:"psicoterapia",label:"Psicoterapia",type:"textarea"},
+    ]},
+    { id:"sono", title:"9. Sono", icon:"◕", fields:[
+      {id:"qualidadeSono",label:"Qualidade do sono",type:"select",options:["","Boa","Regular","Ruim","Péssima"]},
+      {id:"horariosSono",label:"Horários",type:"text"},
+      {id:"sonolencia",label:"Sonolência diurna",type:"radio",options:["Sim","Não","Às vezes"]},
+    ]},
+    { id:"subst", title:"10. Substâncias", icon:"○", fields:[
+      {id:"cafeina",label:"Cafeína",type:"text"},{id:"alcool",label:"Álcool",type:"text"},
+      {id:"outrasSubst",label:"Outras substâncias",type:"textarea"},{id:"medicacoes",label:"Medicações atuais",type:"textarea"},
+    ]},
+    { id:"med", title:"11. Histórico Médico", icon:"●", fields:[{id:"condicoesClin",label:"Condições clínicas relevantes",type:"textarea"}]},
+    { id:"fam", title:"12. Família", icon:"◍", fields:[{id:"histFamiliar",label:"Neurodesenvolvimento / psiquiatria na família",type:"textarea"}]},
+    { id:"social", title:"13. Social", icon:"◌", fields:[{id:"funcSocial",label:"Observações",type:"textarea"}]},
+    { id:"triagem", title:"14. Triagem", icon:"⊕", fields:[
+      {id:"tocVsTdah",label:"TOC × TDAH",type:"textarea"},{id:"tdahVsAns",label:"TDAH × Ansiedade",type:"textarea"},
+      {id:"altasVsTdah",label:"Altas Hab. × TDAH",type:"textarea"},{id:"altasVsToc",label:"Altas Hab. × TOC",type:"textarea"},
+    ]},
+    { id:"risco", title:"15. Risco Clínico", icon:"⊗", fields:[
+      {id:"ideacaoSuic",label:"Ideação suicida",type:"textarea"},{id:"automut",label:"Automutilação",type:"textarea"},
+    ]},
+    { id:"obs", title:"16. Obs. Examinador", icon:"⊙", fields:[
+      {id:"aparencia",label:"Aparência",type:"textarea"},{id:"humorClin",label:"Humor",type:"text"},
+      {id:"afeto",label:"Afeto",type:"text"},{id:"fala",label:"Fala",type:"textarea"},
+      {id:"insightClin",label:"Insight",type:"select",options:["","Preservado","Parcialmente preservado","Prejudicado","Ausente"]},
+      {id:"julgamento",label:"Julgamento",type:"select",options:["","Preservado","Parcialmente preservado","Prejudicado","Ausente"]},
+    ]},
+    { id:"expec", title:"17. Expectativas", icon:"⊛", fields:[{id:"expectativas",label:"Expectativas do paciente",type:"textarea"}]},
+    { id:"hipot", title:"18. Hipóteses", icon:"⊜", subtitle:"Uso profissional", fields:[
+      {id:"hipotesesClin",label:"Hipóteses clínicas iniciais",type:"textarea"},
+      {id:"condutaProp",label:"Conduta proposta",type:"textarea"},
+    ]},
+  ]
+};
+
+// ── HETEROANAMNESE ──────────────────────────────────────────────
+DOC_DEFS.heteroanam = { sections:[
+  { id:"info", title:"Informações do Informante", icon:"👤", fields:[
+    {id:"hetNomeInfo",label:"Nome do informante",type:"text"},
+    {id:"hetRelacao",label:"Relação com o paciente",type:"select",options:["","Pai","Mãe","Cônjuge","Filho(a)","Irmão/Irmã","Avô/Avó","Cuidador","Outro"]},
+    {id:"hetTelefone",label:"Telefone do informante",type:"tel"},
+    {id:"hetContatoInfo",label:"Tempo de convivência com o paciente",type:"text"},
+  ]},
+  { id:"queixa", title:"Queixa e Histórico", icon:"📋", fields:[
+    {id:"hetQueixaPrincipal",label:"Queixa principal do informante",type:"textarea"},
+    {id:"hetInicioProblem",label:"Início dos problemas (quando percebeu?)",type:"textarea"},
+    {id:"hetEvolucao",label:"Evolução dos sintomas",type:"textarea"},
+    {id:"hetFatoresAgrav",label:"Fatores que agravam os sintomas",type:"textarea"},
+    {id:"hetFatoresAliv",label:"Fatores que aliviam os sintomas",type:"textarea"},
+  ]},
+  { id:"desenv", title:"Desenvolvimento", icon:"🧒", fields:[
+    {id:"hetGestacao",label:"Gestação (intercorrências, uso de substâncias)",type:"textarea"},
+    {id:"hetParto",label:"Parto e condições de nascimento",type:"textarea"},
+    {id:"hetPrimeirosAnos",label:"Primeiros anos de vida",type:"textarea"},
+    {id:"hetFala",label:"Desenvolvimento da fala e linguagem",type:"textarea"},
+    {id:"hetMotor",label:"Desenvolvimento motor",type:"textarea"},
+    {id:"hetEscolarizacao",label:"Escolarização (início, dificuldades)",type:"textarea"},
+  ]},
+  { id:"comp", title:"Comportamento e Relacionamentos", icon:"🤝", fields:[
+    {id:"hetComportamento",label:"Comportamento em casa",type:"textarea"},
+    {id:"hetSocial",label:"Relacionamentos sociais",type:"textarea"},
+    {id:"hetHumor",label:"Humor e reações emocionais",type:"textarea"},
+    {id:"hetSono",label:"Sono e alimentação",type:"textarea"},
+    {id:"hetAtividades",label:"Atividades e interesses",type:"textarea"},
+  ]},
+  { id:"obs", title:"Observações Finais", icon:"📝", fields:[
+    {id:"hetObs",label:"Outras observações relevantes",type:"textarea"},
+    {id:"hetExpectativas",label:"Expectativas do informante",type:"textarea"},
+  ]},
+]};
+
+// ── OBS CLÍNICA ─────────────────────────────────────────────────
+DOC_DEFS.obsClinica = { sections:[
+  { id:"sessao", title:"Dados da Sessão", icon:"📅", fields:[
+    {id:"obcData",label:"Data da observação",type:"date"},
+    {id:"obcSessaoNum",label:"Número da sessão",type:"number"},
+    {id:"obcDuracao",label:"Duração",type:"text"},
+    {id:"obcLocal",label:"Local",type:"text"},
+  ]},
+  { id:"apres", title:"Apresentação Geral", icon:"👁️",
+    checks2:[
+      {group:"Aparência",prefix:"obcApar",items:["Cuidado com a higiene","Vestimenta adequada","Aspecto geral preservado","Sinais de descuido"]},
+      {group:"Postura e Motricidade",prefix:"obcPost",items:["Postura adequada","Agitação psicomotora","Lentificação motora","Tiques ou estereotipias","Tremores"]},
+    ],
+    fields:[{id:"obcApresObs",label:"Observações sobre apresentação",type:"textarea"}]
+  },
+  { id:"humor", title:"Humor e Afeto", icon:"😐",
+    checks2:[
+      {group:"Humor",prefix:"obcHumor",items:["Eutímico","Deprimido","Eufórico","Irritável","Ansioso","Lábil"]},
+      {group:"Afeto",prefix:"obcAfeto",items:["Congruente","Incongruente","Embotado","Amplificado","Restrito"]},
+    ],
+    fields:[{id:"obcHumorObs",label:"Observações",type:"textarea"}]
+  },
+  { id:"cogn", title:"Cognição e Fala", icon:"🧠",
+    checks2:[
+      {group:"Fala",prefix:"obcFala",items:["Fluente","Lentificada","Acelerada","Coerente","Incoerente","Volume adequado"]},
+      {group:"Pensamento",prefix:"obcPens",items:["Organizado","Desorganizado","Tangencial","Circunstancial","Ideias fixas","Conteúdo persecutório"]},
+    ],
+    fields:[
+      {id:"obcOrientacao",label:"Orientação (tempo/espaço/pessoa)",type:"textarea"},
+      {id:"obcAtencao",label:"Atenção e concentração",type:"textarea"},
+      {id:"obcMemoria",label:"Memória aparente",type:"textarea"},
+      {id:"obcInsight",label:"Insight",type:"select",options:["","Preservado","Parcial","Ausente"]},
+      {id:"obcJulgamento",label:"Julgamento",type:"select",options:["","Preservado","Parcial","Comprometido"]},
+    ]
+  },
+  { id:"comp", title:"Comportamento na Sessão", icon:"📊", fields:[
+    {id:"obcEngajamento",label:"Engajamento e cooperação",type:"select",options:["","Ótimo","Bom","Regular","Baixo","Recusou"]},
+    {id:"obcRespostasTaref",label:"Resposta às tarefas",type:"textarea"},
+    {id:"obcFatigue",label:"Sinais de fadiga ou esforço excessivo",type:"textarea"},
+    {id:"obcComportObs",label:"Outros comportamentos observados",type:"textarea"},
+  ]},
+  { id:"concl", title:"Conclusão da Observação", icon:"📝", fields:[
+    {id:"obcImpressao",label:"Impressão clínica geral",type:"textarea"},
+    {id:"obcConduta",label:"Conduta a partir da observação",type:"textarea"},
+  ]},
+]};
+
+// ── TCLE ─────────────────────────────────────────────────────────
+DOC_DEFS.tcle = { sections:[
+  { id:"dados", title:"Dados do Participante", icon:"📋", fields:[
+    {id:"tcleDataDoc",label:"Data do documento",type:"date"},
+    {id:"tcleNomePart",label:"Nome do participante (se diferente)",type:"text",placeholder:"Deixar em branco para usar nome da anamnese"},
+    {id:"tcleFinalidade",label:"Finalidade da avaliação",type:"textarea"},
+    {id:"tcleProcedimentos",label:"Procedimentos a serem realizados",type:"textarea"},
+  ]},
+  { id:"info", title:"Informações ao Participante", icon:"ℹ️", fields:[
+    {id:"tcleBeneficios",label:"Benefícios esperados",type:"textarea"},
+    {id:"tcleRiscos",label:"Riscos e desconfortos possíveis",type:"textarea"},
+    {id:"tcleConfidencialidade",label:"Confidencialidade e sigilo",type:"textarea"},
+    {id:"tcleDireitoDesistir",label:"Direito de desistir",type:"textarea"},
+    {id:"tcleContatoPsic",label:"Contato da psicóloga para dúvidas",type:"text"},
+  ]},
+  { id:"assin", title:"Assinatura", icon:"✍️", fields:[
+    {id:"tcleLocalData",label:"Local e data",type:"text"},
+    {id:"tcleObs",label:"Observações adicionais",type:"textarea"},
+  ]},
+]};
+
+// ── CONTRATO ─────────────────────────────────────────────────────
+DOC_DEFS.contrato = { sections:[
+  { id:"partes", title:"Partes do Contrato", icon:"📄", fields:[
+    {id:"ctDataContrato",label:"Data do contrato",type:"date"},
+    {id:"ctNomeResponsavel",label:"Nome do responsável financeiro (se diferente)",type:"text"},
+    {id:"ctCpfResponsavel",label:"CPF do responsável",type:"text"},
+    {id:"ctEndereco",label:"Endereço do contratante",type:"textarea"},
+  ]},
+  { id:"servicos", title:"Serviços e Honorários", icon:"💰", fields:[
+    {id:"ctTipoServico",label:"Tipo de serviço",type:"select",options:["","Avaliação Neuropsicológica","Psicoterapia","Orientação de Pais","Triagem","Outro"]},
+    {id:"ctValorSessao",label:"Valor por sessão (R$)",type:"text"},
+    {id:"ctNumSessoes",label:"Número previsto de sessões",type:"text"},
+    {id:"ctValorTotal",label:"Valor total estimado (R$)",type:"text"},
+    {id:"ctFormaPagamento",label:"Forma de pagamento",type:"select",options:["","À vista","Parcelado","Por sessão","Outro"]},
+    {id:"ctVencimento",label:"Vencimento",type:"text"},
+  ]},
+  { id:"regras", title:"Regras e Cancelamento", icon:"📋", fields:[
+    {id:"ctCancelamento",label:"Política de cancelamento",type:"textarea"},
+    {id:"ctAtraso",label:"Política de atraso",type:"textarea"},
+    {id:"ctConfidencial",label:"Cláusula de confidencialidade",type:"textarea"},
+    {id:"ctObs",label:"Observações adicionais",type:"textarea"},
+  ]},
+]};
+
+// ── AUTORIZAÇÃO TERCEIROS ─────────────────────────────────────────
+DOC_DEFS.autorizacao = { sections:[
+  { id:"dados", title:"Autorização para Contato com Terceiros", icon:"🤝", fields:[
+    {id:"autDataDoc",label:"Data",type:"date"},
+    {id:"autNomeAutorizado",label:"Nome da pessoa autorizada",type:"text"},
+    {id:"autRelacao",label:"Relação com o paciente",type:"text"},
+    {id:"autTelefone",label:"Telefone da pessoa autorizada",type:"tel"},
+    {id:"autFinalidade",label:"Finalidade do contato",type:"textarea"},
+    {id:"autRestricoes",label:"Restrições / limitações",type:"textarea"},
+    {id:"autValidadeDoc",label:"Validade deste documento",type:"text"},
+    {id:"autObs",label:"Observações",type:"textarea"},
+  ]},
+]};
+
+// ── TERMO MENOR ──────────────────────────────────────────────────
+DOC_DEFS.termoMenor = { sections:[
+  { id:"dados", title:"Termo de Responsabilidade – Menor de Idade", icon:"👶", fields:[
+    {id:"tmDataDoc",label:"Data",type:"date"},
+    {id:"tmNomeResponsavel",label:"Nome do responsável legal",type:"text"},
+    {id:"tmGrauParentesco",label:"Grau de parentesco",type:"select",options:["","Pai","Mãe","Avô/Avó","Tutor(a)","Guardião(ã)","Outro"]},
+    {id:"tmCpfResponsavel",label:"CPF do responsável",type:"text"},
+    {id:"tmTelefone",label:"Telefone",type:"tel"},
+    {id:"tmNomeMenor",label:"Nome do menor",type:"text"},
+    {id:"tmDataNascMenor",label:"Data de nascimento do menor",type:"date"},
+    {id:"tmEscola",label:"Escola (se aplicável)",type:"text"},
+    {id:"tmAutorizacoesEsp",label:"Autorizações específicas concedidas",type:"textarea"},
+    {id:"tmRestricoes",label:"Restrições",type:"textarea"},
+    {id:"tmObs",label:"Observações",type:"textarea"},
+  ]},
+]};
+
+// ── EVOLUÇÃO DE SESSÃO ───────────────────────────────────────────
+DOC_DEFS.evolucao = { sections:[
+  { id:"dados", title:"Dados da Sessão", icon:"📅", fields:[
+    {id:"evData",label:"Data",type:"date"},
+    {id:"evSessaoNum",label:"Nº da sessão",type:"number"},
+    {id:"evDuracao",label:"Duração",type:"text"},
+    {id:"evModalidade",label:"Modalidade",type:"select",options:["","Presencial","Online","Domiciliar"]},
+  ]},
+  { id:"conteudo", title:"Conteúdo da Sessão", icon:"💬", fields:[
+    {id:"evQueixaHoje",label:"Queixa / demanda trazida hoje",type:"textarea"},
+    {id:"evConteudoSessao",label:"Conteúdo trabalhado na sessão",type:"textarea"},
+    {id:"evIntervencoes",label:"Intervenções realizadas",type:"textarea"},
+    {id:"evReacaoPac",label:"Reação do paciente",type:"textarea"},
+  ]},
+  { id:"avali", title:"Avaliação e Conduta", icon:"📊", fields:[
+    {id:"evHumorSessao",label:"Humor / estado geral na sessão",type:"text"},
+    {id:"evProgressos",label:"Progressos observados",type:"textarea"},
+    {id:"evDificuldades",label:"Dificuldades",type:"textarea"},
+    {id:"evConduta",label:"Conduta / próximos passos",type:"textarea"},
+    {id:"evTarefas",label:"Tarefas para próxima sessão",type:"textarea"},
+  ]},
+]};
+
+// ── DEVOLUTIVA ───────────────────────────────────────────────────
+DOC_DEFS.devolutiva = { sections:[
+  { id:"dados", title:"Dados da Devolutiva", icon:"🔄", fields:[
+    {id:"devData",label:"Data",type:"date"},
+    {id:"devParticipantes",label:"Participantes presentes",type:"textarea"},
+    {id:"devModalidade",label:"Modalidade",type:"select",options:["","Presencial","Online"]},
+    {id:"devDuracao",label:"Duração",type:"text"},
+  ]},
+  { id:"conteudo", title:"Conteúdo da Devolutiva", icon:"📋", fields:[
+    {id:"devResultados",label:"Resultados apresentados",type:"textarea"},
+    {id:"devDiagnosticos",label:"Diagnósticos / hipóteses comunicados",type:"textarea"},
+    {id:"devOrientacoes",label:"Orientações fornecidas",type:"textarea"},
+    {id:"devEncaminhamentos",label:"Encaminhamentos realizados",type:"textarea"},
+    {id:"devReacaoPac",label:"Reação do paciente / responsável",type:"textarea"},
+    {id:"devObs",label:"Observações",type:"textarea"},
+  ]},
+]};
+
+// ── PRONTUÁRIO ───────────────────────────────────────────────────
+DOC_DEFS.prontuario = { sections:[
+  { id:"dados", title:"Dados do Prontuário", icon:"🗂️", fields:[
+    {id:"pronNumero",label:"Número do prontuário",type:"text"},
+    {id:"pronDataAbert",label:"Data de abertura",type:"date"},
+    {id:"pronTipoAtend",label:"Tipo de atendimento",type:"select",options:["","Avaliação","Psicoterapia","Acompanhamento","Outro"]},
+    {id:"pronConvenio",label:"Convênio / particular",type:"text"},
+    {id:"pronMedResp",label:"Médico responsável (se houver)",type:"text"},
+    {id:"pronContatoEmerg",label:"Contato de emergência",type:"text"},
+    {id:"pronTelEmerg",label:"Telefone de emergência",type:"tel"},
+  ]},
+  { id:"historico", title:"Histórico Resumido", icon:"📝", fields:[
+    {id:"pronHistorico",label:"Histórico clínico resumido",type:"textarea"},
+    {id:"pronDiagnosticos",label:"Diagnósticos estabelecidos (CID/DSM)",type:"textarea"},
+    {id:"pronMedAtual",label:"Medicações em uso",type:"textarea"},
+    {id:"pronAlergias",label:"Alergias e contraindicações",type:"textarea"},
+  ]},
+  { id:"evolucao", title:"Acompanhamento", icon:"📈", fields:[
+    {id:"pronUltimaSessao",label:"Data da última sessão",type:"date"},
+    {id:"pronProxSessao",label:"Data da próxima sessão",type:"date"},
+    {id:"pronSituacaoAtual",label:"Situação atual do paciente",type:"textarea"},
+    {id:"pronObs",label:"Observações do prontuário",type:"textarea"},
+  ]},
+]};
+
+// ── PROTOCOLOS DE TESTES ─────────────────────────────────────────
+DOC_DEFS.protocolos = { sections:[
+  { id:"dados", title:"Registro de Protocolos", icon:"◐", fields:[
+    {id:"protDataAval",label:"Data da avaliação",type:"date"},
+    {id:"protSessoes",label:"Número de sessões de testagem",type:"number"},
+  ]},
+  { id:"testes", title:"Testes Aplicados", icon:"📊",
+    checksTestes:[
+      "WISC-V / WAIS-IV","NEUPSILIN","NEUPSILIN-I","BPA (Bateria de Provas de Atenção)","CPM/SPM/APM (Raven)","WCST","Trail Making Test (TMT)","Wisconsin","Rey-AVLT","Figura Complexa de Rey","Teste de Nomeação de Boston","RAVLT","IGT (Jogo de Iowa)","Fluência Verbal","Stroop","FDT","Teste de Memória de Trabalho","TEA (Transtorno do Espectro Autista) – ADI-R / ADOS-2","Bender","HTP / Desenhos","TAT / CAT","Rorschach","ISSL","BDI / BDI-II","BAI","SNAP-IV","CONNERS","Escala de Conners (pais/professores)","CBCL","Escala Vineland",
+    ],
+    fields:[
+      {id:"protOutros",label:"Outros instrumentos utilizados",type:"textarea"},
+      {id:"protJustificativa",label:"Justificativa da seleção de instrumentos",type:"textarea"},
+      {id:"protCondicoes",label:"Condições de aplicação",type:"textarea"},
+      {id:"protComport",label:"Comportamento durante testagem",type:"textarea"},
+    ]
+  },
+]};
+
+// ── PLANILHA DE CORREÇÃO ─────────────────────────────────────────
+DOC_DEFS.planilha = { sections:[
+  { id:"dados", title:"Planilha de Escores", icon:"◑", fields:[
+    {id:"planDataCorr",label:"Data da correção",type:"date"},
+    {id:"planCorrigidoPor",label:"Corrigido por",type:"text"},
+  ]},
+  { id:"escores", title:"Resultados por Instrumento", icon:"📊", fields:[
+    {id:"planWisc",label:"WISC-V / WAIS-IV – QI Total e índices",type:"textarea"},
+    {id:"planAtencao",label:"Atenção (BPA/CPT/FDT) – percentis",type:"textarea"},
+    {id:"planMemoria",label:"Memória (RAVLT/Rey/NEUPSILIN) – escores",type:"textarea"},
+    {id:"planFunExec",label:"Funções Executivas (TMT/WCST/Fluência) – resultados",type:"textarea"},
+    {id:"planLinguagem",label:"Linguagem e nomeação",type:"textarea"},
+    {id:"planProjetivos",label:"Instrumentos projetivos – síntese",type:"textarea"},
+    {id:"planPersonalidade",label:"Personalidade / rastreamento emocional",type:"textarea"},
+    {id:"planOutrosEsc",label:"Outros escores relevantes",type:"textarea"},
+    {id:"planConclusaoEsc",label:"Síntese dos resultados",type:"textarea"},
+  ]},
+]};
+
+// ── CHECKLIST DE DOCUMENTOS ──────────────────────────────────────
+DOC_DEFS.checklist = { sections:[
+  { id:"docs", title:"Checklist de Documentos", icon:"✅",
+    checksDocs:[
+      {label:"Anamnese preenchida",id:"ckAnamnese"},
+      {label:"TCLE assinado",id:"ckTcle"},
+      {label:"Contrato assinado",id:"ckContrato"},
+      {label:"Heteroanamnese (se aplicável)",id:"ckHetero"},
+      {label:"Autorização p/ terceiros",id:"ckAutorizacao"},
+      {label:"Termo para menor (se aplicável)",id:"ckTermoMenor"},
+      {label:"Fichas de observação clínica",id:"ckObsClinica"},
+      {label:"Evoluções de sessão",id:"ckEvolucoes"},
+      {label:"Prontuário atualizado",id:"ckProntuario"},
+      {label:"Protocolos de testes aplicados",id:"ckProtocolos"},
+      {label:"Planilha de correção preenchida",id:"ckPlanilha"},
+      {label:"Laudo / relatório emitido",id:"ckLaudo"},
+      {label:"Registro de devolutiva",id:"ckDevolutiva"},
+      {label:"Documentos externos recebidos",id:"ckDocExt"},
+    ],
+    fields:[
+      {id:"ckDocExtDesc",label:"Documentos externos recebidos (descrever)",type:"textarea"},
+      {id:"ckObs",label:"Observações sobre pendências",type:"textarea"},
+    ]
+  },
+]};
+
+// ── LAUDO ────────────────────────────────────────────────────────
+DOC_DEFS.laudo = { sections:[
+  { id:"dados", title:"Dados do Laudo", icon:"📊", fields:[
+    {id:"ldDataLaudo",label:"Data do laudo",type:"date"},
+    {id:"ldFinalidade",label:"Finalidade do laudo",type:"textarea"},
+    {id:"ldDestinatario",label:"Destinatário (se aplicável)",type:"text"},
+  ]},
+  { id:"metodo", title:"Método", icon:"🔬", fields:[
+    {id:"ldPeriodoAval",label:"Período de avaliação",type:"text"},
+    {id:"ldNSessoes",label:"Número de sessões",type:"number"},
+    {id:"ldInstrumentos",label:"Instrumentos utilizados",type:"textarea"},
+    {id:"ldFontesInfo",label:"Fontes de informação",type:"textarea"},
+  ]},
+  { id:"resultados", title:"Resultados", icon:"📈", fields:[
+    {id:"ldHistClinico",label:"Histórico clínico e queixa",type:"textarea"},
+    {id:"ldResultados",label:"Resultados e análise dos instrumentos",type:"textarea"},
+    {id:"ldComport",label:"Aspectos comportamentais observados",type:"textarea"},
+  ]},
+  { id:"conclusao", title:"Conclusão", icon:"📋", fields:[
+    {id:"ldConclusao",label:"Conclusão / síntese diagnóstica",type:"textarea"},
+    {id:"ldCid",label:"CID-11 / DSM-5 (se aplicável)",type:"text"},
+    {id:"ldRecomendacoes",label:"Recomendações",type:"textarea"},
+    {id:"ldEncaminhamentos",label:"Encaminhamentos",type:"textarea"},
+  ]},
+]};
+
+// ── RELATÓRIO ────────────────────────────────────────────────────
+DOC_DEFS.relatorio = { sections:[
+  { id:"dados", title:"Dados do Relatório", icon:"📃", fields:[
+    {id:"relData",label:"Data",type:"date"},
+    {id:"relTipo",label:"Tipo de relatório",type:"select",options:["","Relatório de Progresso","Relatório para Escola","Relatório Médico","Relatório para Jurídico","Relatório para INSS","Outro"]},
+    {id:"relDestinatario",label:"Destinatário",type:"text"},
+    {id:"relFinalidade",label:"Finalidade",type:"textarea"},
+  ]},
+  { id:"corpo", title:"Corpo do Relatório", icon:"📝", fields:[
+    {id:"relIntroducao",label:"Introdução / apresentação do caso",type:"textarea"},
+    {id:"relDesenvolvimento",label:"Desenvolvimento (achados, evolução, intervenções)",type:"textarea"},
+    {id:"relResultados",label:"Resultados obtidos",type:"textarea"},
+    {id:"relConclusao",label:"Conclusão e recomendações",type:"textarea"},
+  ]},
+]};
+
+// ── PARECER ──────────────────────────────────────────────────────
+DOC_DEFS.parecer = { sections:[
+  { id:"dados", title:"Dados do Parecer", icon:"⚖️", fields:[
+    {id:"parData",label:"Data",type:"date"},
+    {id:"parSolicitante",label:"Solicitante do parecer",type:"text"},
+    {id:"parFinalidade",label:"Finalidade",type:"textarea"},
+    {id:"parQuestao",label:"Questão/demanda apresentada",type:"textarea"},
+  ]},
+  { id:"corpo", title:"Corpo do Parecer", icon:"📝", fields:[
+    {id:"parAnalise",label:"Análise técnica",type:"textarea"},
+    {id:"parFundamentos",label:"Fundamentação técnica e científica",type:"textarea"},
+    {id:"parConclusao",label:"Conclusão / posicionamento técnico",type:"textarea"},
+    {id:"parRessalvas",label:"Ressalvas (se houver)",type:"textarea"},
+  ]},
+]};
+
+// ── DECLARAÇÃO ───────────────────────────────────────────────────
+DOC_DEFS.declaracao = { sections:[
+  { id:"dados", title:"Dados da Declaração", icon:"📜", fields:[
+    {id:"declData",label:"Data",type:"date"},
+    {id:"declTipo",label:"Tipo",type:"select",options:["","Declaração de Comparecimento","Declaração de Acompanhamento","Declaração para Plano de Saúde","Declaração para Escola","Declaração para Empresa","Outro"]},
+    {id:"declDestinatario",label:"Destinatário / Interessado",type:"text"},
+    {id:"declFinalidade",label:"Finalidade da declaração",type:"textarea"},
+    {id:"declConteudo",label:"Conteúdo da declaração",type:"textarea"},
+    {id:"declPeriodo",label:"Período de acompanhamento",type:"text"},
+    {id:"declObs",label:"Observações",type:"textarea"},
+  ]},
+]};
+
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+let formData = {};
+let currentDoc = "anamnese";
+let currentSec = 0;
+let deferredInstall = null;
+
+function initData() {
+  formData = {};
+  Object.keys(DOC_DEFS).forEach(docId => {
+    const def = DOC_DEFS[docId];
+    def.sections.forEach(sec => {
+      if (sec.fields) sec.fields.forEach(f => { if (!formData[f.id]) formData[f.id] = ""; });
+      if (sec.tocFields) sec.tocFields.forEach(f => { if (!formData[f.id]) formData[f.id] = ""; });
+      if (sec.subsections) sec.subsections.forEach(sub => sub.checks.forEach(c => { const k=sub.prefix+"_"+c; if (!formData[k]) formData[k]=false; }));
+      if (sec.checks2) sec.checks2.forEach(grp => grp.items.forEach(c => { const k=grp.prefix+"_"+c; if (!formData[k]) formData[k]=false; }));
+      if (sec.checksTestes) sec.checksTestes.forEach(c => { const k="teste_"+c; if (!formData[k]) formData[k]=false; });
+      if (sec.checksDocs) sec.checksDocs.forEach(c => { if (!formData[c.id]) formData[c.id]=false; });
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER SIDEBAR
+// ═══════════════════════════════════════════════════════════════
+function renderSidebar() {
+  const groups = {};
+  DOCS.forEach(d => { if (!groups[d.group]) groups[d.group]=[]; groups[d.group].push(d); });
+  let html = "";
+  Object.keys(groups).forEach(g => {
+    html += `<div class="tabs-group-label">${g}</div>`;
+    groups[g].forEach(d => {
+      html += `<button class="tab-btn ${d.id===currentDoc?'active':''}" onclick="switchDoc('${d.id}')">
+        <span class="tab-icon">${d.icon}</span>${d.label}</button>`;
+    });
+  });
+  document.getElementById("docTabs").innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER SECTION TABS
+// ═══════════════════════════════════════════════════════════════
+function renderSecTabs() {
+  const def = DOC_DEFS[currentDoc];
+  const html = def.sections.map((s,i) =>
+    `<button class="sec-tab ${i===currentSec?'active':''}" onclick="switchSec(${i})">${s.title}</button>`
+  ).join("");
+  document.getElementById("secTabs").innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER CONTENT
+// ═══════════════════════════════════════════════════════════════
+function renderContent() {
+  const def = DOC_DEFS[currentDoc];
+  const sec = def.sections[currentSec];
+  let html = "";
+
+  // iOS install
+  const isIOS = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase()) && !window.navigator.standalone;
+  if (isIOS && !sessionStorage.getItem("instDismiss")) {
+    html += `<div class="install-banner"><div class="inst-txt"><strong>📱 Instalar no iPhone</strong>Compartilhar → "Adicionar à Tela de Início"</div><button class="inst-x" onclick="dismissInst()">✕</button></div>`;
+  }
+  if (deferredInstall && !sessionStorage.getItem("instDismiss")) {
+    html += `<div class="install-banner"><div class="inst-txt"><strong>📱 Instalar como app</strong>Use offline, direto da tela inicial</div><button class="inst-btn" onclick="triggerInst()">Instalar</button><button class="inst-x" onclick="dismissInst()">✕</button></div>`;
+  }
+
+  // Mobile selects
+  const docOptions = DOCS.map((d,i) => `<option value="${d.id}" ${d.id===currentDoc?"selected":""}>${d.icon} ${d.label}</option>`).join("");
+  const secOptions = def.sections.map((s,i) => `<option value="${i}" ${i===currentSec?"selected":""}>${s.title}</option>`).join("");
+  html += `<div class="mob-selects">
+    <select class="mob-sel" onchange="switchDoc(this.value)">${docOptions}</select>
+    <select class="mob-sel" onchange="switchSec(parseInt(this.value))">${secOptions}</select>
+  </div>`;
+
+  // Card
+  html += `<div class="card">
+    <div class="card-head">
+      <span class="card-icon">${sec.icon||"📋"}</span>
+      <div><div class="card-title">${sec.title}</div>${sec.subtitle?`<div class="card-sub">${sec.subtitle}</div>`:""}</div>
+    </div>
+    <div class="card-body">`;
+
+  // Regular fields
+  if (sec.fields) sec.fields.forEach(f => { html += renderFieldBlock(f); });
+
+  // Subsections (anamnese queixas)
+  if (sec.subsections) {
+    sec.subsections.forEach(sub => {
+      html += `<div class="sub-block"><div class="sub-title">${sub.title}</div><div class="checks-grid">`;
+      sub.checks.forEach(c => {
+        const k = sub.prefix+"_"+c;
+        html += `<div class="chk-opt" onclick="toggleChk('${esc(k)}')"><div class="chk-box ${formData[k]?'on':''}" id="cb_${safeId(k)}"></div><span class="chk-lbl">${c}</span></div>`;
+      });
+      html += `</div></div>`;
+    });
+    if (sec.tocFields) {
+      html += `<div class="sub-block"><div class="sub-title">TOC</div>`;
+      sec.tocFields.forEach(f => { html += renderFieldBlock(f); });
+      html += `</div>`;
+    }
+  }
+
+  // checks2 (obs clínica)
+  if (sec.checks2) {
+    sec.checks2.forEach(grp => {
+      html += `<div class="sub-block"><div class="sub-title">${grp.group}</div><div class="checks-grid">`;
+      grp.items.forEach(c => {
+        const k = grp.prefix+"_"+c;
+        html += `<div class="chk-opt" onclick="toggleChk('${esc(k)}')"><div class="chk-box ${formData[k]?'on':''}" id="cb_${safeId(k)}"></div><span class="chk-lbl">${c}</span></div>`;
+      });
+      html += `</div></div>`;
+    });
+  }
+
+  // checksTestes
+  if (sec.checksTestes) {
+    html += `<div class="sub-block"><div class="sub-title">Selecione os instrumentos aplicados</div><div class="checks-grid">`;
+    sec.checksTestes.forEach(c => {
+      const k = "teste_"+c;
+      html += `<div class="chk-opt" onclick="toggleChk('${esc(k)}')"><div class="chk-box ${formData[k]?'on':''}" id="cb_${safeId(k)}"></div><span class="chk-lbl">${c}</span></div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // checksDocs (checklist)
+  if (sec.checksDocs) {
+    html += `<div class="sub-block"><div class="sub-title">Documentos</div>`;
+    sec.checksDocs.forEach(c => {
+      html += `<div class="chk-opt" style="margin-bottom:8px" onclick="toggleChk('${c.id}')"><div class="chk-box ${formData[c.id]?'on':''}" id="cb_${c.id}"></div><span class="chk-lbl" style="font-size:12px">${c.label}</span></div>`;
+    });
+    html += `</div>`;
+    if (sec.fields) sec.fields.forEach(f => { html += renderFieldBlock(f); });
+  }
+
+  // Nav
+  html += `</div>
+    <div class="snav">
+      <button class="snav-btn snav-prev" onclick="switchSec(${currentSec-1})" ${currentSec===0?"disabled":""}>← Ant.</button>
+      <span class="snav-cnt">${currentSec+1}/${def.sections.length}</span>
+      <button class="snav-btn snav-next" onclick="switchSec(${currentSec+1})" ${currentSec===def.sections.length-1?"disabled":""}>Próx. →</button>
+    </div>
+  </div>`;
+
+  // Export panel
+  html += `<div class="exp-panel">
+    <div class="exp-title">Exportar documento atual</div>
+    <div class="exp-btns">
+      <button class="exp-btn exp-pdf" onclick="exportPDF()">⬇ PDF</button>
+      <button class="exp-btn exp-word" onclick="exportWord()">⬇ Word (.doc)</button>
+    </div>
+    <div class="exp-hint">
+      <strong>PDF:</strong> abre aba de impressão → Salvar como PDF<br>
+      <strong>Word:</strong> baixa .doc → Word ou Google Docs
+    </div>
+  </div>`;
+
+  document.getElementById("contentInner").innerHTML = html;
+
+  // Bind inputs
+  document.querySelectorAll(".finput,.ftextarea,.fselect").forEach(el => {
+    el.addEventListener("input", () => { formData[el.dataset.id] = el.value; updateProg(); });
+  });
+
+  updateProg();
+  document.querySelector(".content").scrollTo(0,0);
+}
+
+function renderFieldBlock(f) {
+  const v = (formData[f.id]||"").toString().replace(/"/g,"&quot;");
+  let input = "";
+  if (f.type==="textarea") input = `<textarea class="ftextarea" data-id="${f.id}" placeholder="—">${formData[f.id]||""}</textarea>`;
+  else if (f.type==="select") input = `<select class="fselect" data-id="${f.id}">${f.options.map(o=>`<option value="${o}" ${formData[f.id]===o?"selected":""}>${o||"Selecione..."}</option>`).join("")}</select>`;
+  else if (f.type==="radio") input = `<div class="radio-grp">${f.options.map(o=>`<div class="radio-opt" onclick="setRadio('${f.id}','${o}')"><div class="radio-dot ${formData[f.id]===o?'on':''}" id="rd_${safeId(f.id)}_${safeId(o)}"></div><span class="radio-lbl">${o}</span></div>`).join("")}</div>`;
+  else input = `<input class="finput" type="${f.type}" data-id="${f.id}" value="${v}" placeholder="—"/>`;
+  return `<div class="fg"><div class="flabel">${f.label}</div>${input}</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INTERACTION
+// ═══════════════════════════════════════════════════════════════
+function switchDoc(id) { currentDoc=id; currentSec=0; renderSidebar(); renderSecTabs(); renderContent(); }
+function switchSec(i) {
+  const def = DOC_DEFS[currentDoc];
+  if (i<0||i>=def.sections.length) return;
+  currentSec=i; renderSecTabs(); renderContent();
+}
+function toggleChk(k) {
+  formData[k]=!formData[k];
+  const el=document.getElementById("cb_"+safeId(k));
+  if(el) el.className="chk-box"+(formData[k]?" on":"");
+}
+function setRadio(id,val) {
+  formData[id]=val;
+  document.querySelectorAll(`[id^="rd_${safeId(id)}_"]`).forEach(el=>el.className="radio-dot");
+  const t=document.getElementById(`rd_${safeId(id)}_${safeId(val)}`);
+  if(t) t.className="radio-dot on";
+}
+function updateProg() {
+  const ids=[];
+  Object.keys(DOC_DEFS).forEach(docId=>{
+    DOC_DEFS[docId].sections.forEach(s=>{
+      if(s.fields) s.fields.forEach(f=>ids.push(f.id));
+      if(s.tocFields) s.tocFields.forEach(f=>ids.push(f.id));
+    });
+  });
+  const filled=ids.filter(k=>formData[k]&&formData[k].toString().trim()).length;
+  const pct=Math.round(filled/ids.length*100);
+  document.getElementById("progFill").style.width=pct+"%";
+  document.getElementById("progPct").textContent=pct+"%";
+}
+function saveAll() {
+  try{localStorage.setItem("clinica_eveline",JSON.stringify(formData));}catch(e){}
+  const b=document.getElementById("saveBtn");
+  b.textContent="✓ Salvo"; b.classList.add("ok");
+  setTimeout(()=>{b.textContent="Salvar";b.classList.remove("ok");},2000);
+}
+function loadAll() {
+  try{const s=localStorage.getItem("clinica_eveline");if(s){const d=JSON.parse(s);Object.keys(d).forEach(k=>{formData[k]=d[k];});}}catch(e){}
+}
+function newForm() {
+  if(!confirm("Criar nova ficha? Todos os dados serão perdidos.")) return;
+  initData(); currentDoc="anamnese"; currentSec=0;
+  renderSidebar(); renderSecTabs(); renderContent();
+}
+function esc(s){return s.replace(/'/g,"\\'");}
+function safeId(s){return s.replace(/[^a-z0-9]/gi,"_");}
+
+// ═══════════════════════════════════════════════════════════════
+// INSTALL
+// ═══════════════════════════════════════════════════════════════
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstall=e;renderContent();});
+function triggerInst(){if(!deferredInstall)return;deferredInstall.prompt();deferredInstall.userChoice.then(()=>{deferredInstall=null;dismissInst();});}
+function dismissInst(){sessionStorage.setItem("instDismiss","1");const b=document.querySelector(".install-banner");if(b)b.remove();}
+
+// ═══════════════════════════════════════════════════════════════
+// EXPORT
+// ═══════════════════════════════════════════════════════════════
+// Get patient name from anamnese
+function getPaciente() { return formData.nome || "Paciente"; }
+function getDataHoje() { return new Date().toLocaleDateString("pt-BR"); }
+
+function buildExportHTML(forWord) {
+  const today = getDataHoje();
+  const paciente = getPaciente();
+  const docLabel = DOCS.find(d=>d.id===currentDoc)?.label || currentDoc;
+  const def = DOC_DEFS[currentDoc];
+
+  const v = id => (formData[id]||"").toString().replace(/\n/g,"<br>")||"&nbsp;";
+  const row = (label,id) => `<tr><td class="lc">${label}</td><td class="vc">${v(id)}</td></tr>`;
+  const radioRow = (label,id) => `<tr><td class="lc">${label}</td><td class="vc">${formData[id]||"&nbsp;"}</td></tr>`;
+
+  const wordMeta = forWord?`<meta name=ProgId content=Word.Document><meta name=Generator content="Microsoft Word">
+    <!--[if gte mso 9]><xml><w:WordDocument><w:View>Normal</w:View></w:WordDocument></xml><![endif]-->`:""
+  const printScript = forWord?"":`<script>window.onload=function(){window.print();}<\/script>`;
+
+  let body = "";
+  def.sections.forEach(sec => {
+    body += `<div class="sec">${sec.title}</div>`;
+    if (sec.fields) {
+      body += "<table>";
+      sec.fields.forEach(f => {
+        if (f.type==="radio") body += radioRow(f.label, f.id);
+        else body += row(f.label, f.id);
+      });
+      body += "</table>";
+    }
+    if (sec.subsections) {
+      sec.subsections.forEach(sub => {
+        body += `<div class="sub">${sub.title}</div>`;
+        body += `<div class="checks">${sub.checks.map(c=>`<span class="ci">${formData[sub.prefix+"_"+c]?"☑":"☐"} ${c}</span>`).join("")}</div>`;
+      });
+      if (sec.tocFields) {
+        body += `<div class="sub">TOC</div><table>`;
+        sec.tocFields.forEach(f => {
+          if (f.type==="radio") body+=radioRow(f.label,f.id); else body+=row(f.label,f.id);
+        });
+        body += "</table>";
+      }
+    }
+    if (sec.checks2) {
+      sec.checks2.forEach(grp => {
+        body += `<div class="sub">${grp.group}</div>`;
+        body += `<div class="checks">${grp.items.map(c=>`<span class="ci">${formData[grp.prefix+"_"+c]?"☑":"☐"} ${c}</span>`).join("")}</div>`;
+      });
+    }
+    if (sec.checksTestes) {
+      body += `<div class="sub">Instrumentos Aplicados</div><div class="checks">`;
+      body += sec.checksTestes.map(c=>`<span class="ci">${formData["teste_"+c]?"☑":"☐"} ${c}</span>`).join("");
+      body += "</div>";
+    }
+    if (sec.checksDocs) {
+      body += `<div class="sub">Documentos</div><table>`;
+      sec.checksDocs.forEach(c => { body+=`<tr><td class="lc">${c.label}</td><td class="vc">${formData[c.id]?"✅ Sim":"☐ Pendente"}</td></tr>`; });
+      body += "</table>";
+      if (sec.fields) { body+="<table>"; sec.fields.forEach(f=>{ body+=row(f.label,f.id); }); body+="</table>"; }
+    }
+  });
+
+  return `<!DOCTYPE html><html lang="pt-BR">
+<head><meta charset="UTF-8"/>${wordMeta}
+<title>${docLabel} – ${paciente}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;700&family=Source+Sans+3:wght@400;600&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Source Sans 3',Arial,sans-serif;font-size:9pt;color:#1a1a2e;background:#fff;${forWord?"margin:1.8cm 2cm;":""}}
+  @page{size:A4;margin:14mm 16mm;}
+  @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
+  .hdr{background:#1B4F72;color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+  .hdr-l h1{font-family:'Source Serif 4',serif;font-size:12.5pt;font-weight:700;}
+  .hdr-l .doc{font-size:9pt;color:#AED6F1;margin-top:2px;}
+  .hdr-l .pac{font-size:8pt;color:#7EC8E3;margin-top:1px;}
+  .hdr-r{text-align:right;font-size:8pt;color:#AED6F1;line-height:1.7;white-space:nowrap;}
+  .hdr-r strong{color:#fff;}
+  .sec{font-family:'Source Serif 4',serif;font-size:10.5pt;font-weight:700;color:#1B4F72;border-bottom:1.5px solid #2E86C1;padding-bottom:2px;margin:11px 0 4px;}
+  .sub{font-size:8.5pt;font-weight:600;color:#2E86C1;background:#EBF5FB;padding:3px 7px;margin:5px 0 2px;border-radius:2px;}
+  table{width:100%;border-collapse:collapse;margin-bottom:2px;}
+  .lc{width:35%;background:#EBF5FB;border:.5px solid #AED6F1;padding:4px 7px;font-weight:600;font-size:8pt;color:#1A5276;vertical-align:top;}
+  .vc{background:#FDFEFE;border:.5px solid #AED6F1;padding:4px 7px;font-size:8.5pt;vertical-align:top;}
+  .checks{display:flex;flex-wrap:wrap;gap:3px 14px;background:#EAF2FF;border:.5px solid #AED6F1;padding:5px 8px;margin-bottom:3px;}
+  .ci{font-size:8.5pt;white-space:nowrap;}
+  .foot{margin-top:16px;border-top:.5px solid #ccc;padding-top:6px;display:flex;justify-content:space-between;font-size:7.5pt;color:#777;}
+</style>${printScript}</head><body>
+<div class="hdr">
+  <div class="hdr-l">
+    <h1>${PROF.nome} &nbsp;·&nbsp; ${PROF.crp}</h1>
+    <div class="doc">${docLabel}</div>
+    <div class="pac">Paciente: ${paciente}</div>
+  </div>
+  <div class="hdr-r"><strong>Data:</strong> ${today}<br><strong>Avaliador(a):</strong> ${PROF.nome}</div>
+</div>
+${body}
+<div class="foot">
+  <span>Assinatura: _________________________________ &nbsp; ${PROF.crp}</span>
+  <span>Confidencial · LGPD · ${today}</span>
+</div></body></html>`;
+}
+
+function exportPDF() {
+  const win = window.open("","_blank");
+  if (!win) { alert("Permita pop-ups para exportar PDF."); return; }
+  win.document.write(buildExportHTML(false));
+  win.document.close();
+}
+
+function exportWord() {
+  const html = buildExportHTML(true);
+  const blob = new Blob(["\ufeff"+html],{type:"application/msword;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const nome = getPaciente().replace(/\s+/g,"_");
+  const docLabel = DOCS.find(d=>d.id===currentDoc)?.label.replace(/\s+/g,"_")||currentDoc;
+  a.href=url; a.download=`${docLabel}_${nome}.doc`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SERVICE WORKER
+// ═══════════════════════════════════════════════════════════════
+if ("serviceWorker" in navigator) {
+  const sw = `const C="clinica-v1";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["."])));self.skipWaiting();});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim();});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>caches.match("."))));});`;
+  const swBlob = new Blob([sw],{type:"text/javascript"});
+  navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(()=>{});
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════════════════════════
+initData();
+loadAll();
+renderSidebar();
+renderSecTabs();
+renderContent();
+</script>
+</body>
+</html>
