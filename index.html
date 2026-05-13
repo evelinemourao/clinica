@@ -3,1041 +3,1416 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-<meta name="theme-color" content="#1B4F72"/>
+<meta name="theme-color" content="#0f1923"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="apple-mobile-web-app-title" content="Clínica Eveline"/>
+<meta name="apple-mobile-web-app-title" content="Clínica EM"/>
 <title>Sistema Clínico – Eveline Mourão</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap');
 :root {
-  --bg:#0c0a09; --surface:#1c1917; --surface2:#292524; --border:#3a3733; --border2:#222;
-  --text:#e7e5e4; --text2:#a8a29e; --text3:#78716c;
-  --amber:#f59e0b; --blue:#1d4ed8; --red:#b91c1c; --green:#15803d; --teal:#0e7490;
-  --header:#1B4F72; --section:#60a5fa;
-  --label-bg:#1e2a35; --field-bg:#161412; --check-bg:#1a2030;
-  --safe-top:env(safe-area-inset-top,0px); --safe-bottom:env(safe-area-inset-bottom,0px);
+  --bg: #0a0f14;
+  --bg2: #111820;
+  --bg3: #1a2535;
+  --surface: #152030;
+  --surface2: #1e2d42;
+  --border: #2a3f5a;
+  --border2: #1e2d42;
+  --text: #e8f0f8;
+  --text2: #8ba8c4;
+  --text3: #4a6a8a;
+  --gold: #c9a84c;
+  --gold2: #e8c96a;
+  --blue: #2563eb;
+  --teal: #0891b2;
+  --red: #991b1b;
+  --green: #166534;
+  --green2: #22c55e;
+  --amber: #d97706;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;overflow:hidden;}
-body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text);font-size:13px;display:flex;flex-direction:column;}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+body { font-family: 'JetBrains Mono', monospace; background: var(--bg); color: var(--text); font-size: 13px; }
 
-/* HEADER */
-.app-header{background:var(--header);padding:calc(var(--safe-top) + 8px) 14px 8px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-shrink:0;border-bottom:2px solid #2E86C1;z-index:100;}
-.hdr-left .lbl{font-size:9px;letter-spacing:.25em;color:#AED6F1;text-transform:uppercase;}
-.hdr-left h1{font-size:12px;font-weight:700;color:#fff;line-height:1.2;}
-.hdr-left .crp{font-size:9px;color:#AED6F1;}
-.hdr-right{display:flex;gap:5px;align-items:center;flex-shrink:0;}
-.btn{border:none;cursor:pointer;font-family:inherit;font-size:10px;font-weight:700;padding:5px 9px;border-radius:3px;transition:all .15s;white-space:nowrap;}
-.btn-ghost{background:rgba(255,255,255,.12);color:#fff;}
-.btn-save{background:#57534e;color:#fff;}
-.btn-save.ok{background:var(--green);}
-.btn-pdf{background:var(--red);color:#fff;}
-.btn-word{background:var(--blue);color:#fff;}
-.btn:disabled{opacity:.4;cursor:not-allowed;}
-.prog-wrap{display:flex;align-items:center;gap:5px;}
-.prog-bar{width:50px;height:3px;background:rgba(255,255,255,.15);border-radius:2px;overflow:hidden;}
-.prog-fill{height:100%;background:var(--amber);border-radius:2px;transition:width .4s;}
-.prog-pct{font-size:9px;color:var(--amber);font-weight:700;}
+/* ── SCREENS ── */
+.screen { display: none; height: 100%; flex-direction: column; }
+.screen.active { display: flex; }
+
+/* ── LOGIN ── */
+#loginScreen {
+  background: linear-gradient(135deg, #0a0f14 0%, #0f1f2e 50%, #0a1520 100%);
+  align-items: center; justify-content: center; padding: 24px;
+}
+.login-card {
+  width: 100%; max-width: 380px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 40px 32px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+.login-logo { text-align: center; margin-bottom: 32px; }
+.login-logo .name { font-family: 'Crimson Pro', serif; font-size: 26px; font-weight: 700; color: var(--gold); letter-spacing: 0.05em; }
+.login-logo .crp { font-size: 10px; color: var(--text3); letter-spacing: 0.2em; margin-top: 4px; }
+.login-logo .divider { width: 40px; height: 1px; background: var(--gold); margin: 12px auto; opacity: 0.4; }
+.login-logo .system { font-size: 10px; color: var(--text3); letter-spacing: 0.15em; text-transform: uppercase; }
+.login-field { margin-bottom: 16px; }
+.login-field label { display: block; font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 6px; }
+.login-field input { width: 100%; background: var(--bg2); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 4px; font-family: inherit; font-size: 13px; transition: border-color 0.2s; }
+.login-field input:focus { outline: none; border-color: var(--gold); }
+.btn-login { width: 100%; padding: 12px; background: var(--gold); color: #0a0f14; font-family: inherit; font-size: 12px; font-weight: 700; border: none; border-radius: 4px; cursor: pointer; letter-spacing: 0.1em; text-transform: uppercase; transition: all 0.2s; margin-top: 8px; }
+.btn-login:hover { background: var(--gold2); }
+.login-err { color: #f87171; font-size: 10px; text-align: center; margin-top: 10px; min-height: 16px; }
+.login-new { text-align: center; margin-top: 20px; font-size: 10px; color: var(--text3); }
+.login-new a { color: var(--gold); cursor: pointer; text-decoration: none; }
+.pass-wrap { position: relative; }
+.pass-wrap input { padding-right: 44px !important; width: 100%; }
+.pass-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text3); cursor: pointer; font-size: 18px; padding: 4px; line-height: 1; }
+.pass-toggle:hover { color: var(--gold); }
+.forgot-link { display: block; text-align: right; font-size: 10px; color: var(--text3); cursor: pointer; margin-top: 4px; margin-bottom: 12px; letter-spacing: 0.05em; }
+.forgot-link:hover { color: var(--gold); }
+/* FORGOT SCREEN */
+#forgotScreen { background: linear-gradient(135deg, #0a0f14 0%, #0f1f2e 50%, #0a1520 100%); align-items: center; justify-content: center; padding: 24px; }
+.forgot-card { width: 100%; max-width: 380px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 40px 32px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+.forgot-icon { text-align: center; font-size: 36px; margin-bottom: 12px; }
+.forgot-title { font-family: 'Crimson Pro', serif; font-size: 22px; color: var(--gold); text-align: center; margin-bottom: 8px; }
+.forgot-desc { font-size: 10px; color: var(--text3); text-align: center; margin-bottom: 24px; line-height: 1.7; }
+.forgot-success { background: rgba(22,101,52,0.15); border: 1px solid rgba(34,197,94,0.3); border-radius: 4px; padding: 14px; font-size: 11px; color: var(--green2); text-align: center; line-height: 1.6; display: none; margin-top: 12px; }
+/* AUDITORIA */
+.audit-filter { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; padding: 14px 20px; border-bottom: 1px solid var(--border2); background: var(--bg2); flex-shrink: 0; }
+.audit-item { background: var(--surface); border: 1px solid var(--border2); border-radius: 4px; padding: 10px 14px; margin-bottom: 6px; display: flex; gap: 12px; align-items: flex-start; }
+.audit-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); flex-shrink: 0; margin-top: 5px; }
+.audit-dot.create { background: var(--green2); }
+.audit-dot.delete { background: #f87171; }
+.audit-dot.login { background: #60a5fa; }
+.audit-dot.export { background: #c084fc; }
+.audit-time { font-size: 9px; color: var(--text3); white-space: nowrap; }
+.audit-user { font-size: 10px; color: var(--gold); font-weight: 700; }
+.audit-desc { font-size: 11px; color: var(--text2); margin-top: 1px; }
+
+/* ── REGISTER ── */
+#registerScreen {
+  background: linear-gradient(135deg, #0a0f14 0%, #0f1f2e 100%);
+  align-items: center; justify-content: center; padding: 24px; overflow-y: auto;
+}
+.reg-card { width: 100%; max-width: 420px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 32px; }
+.reg-title { font-family: 'Crimson Pro', serif; font-size: 20px; color: var(--gold); margin-bottom: 24px; text-align: center; }
+
+/* ── MAIN APP ── */
+#appScreen { overflow: hidden; }
+
+/* TOPBAR */
+.topbar {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border2);
+  padding: calc(var(--safe-top) + 8px) 16px 8px;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  flex-shrink: 0; z-index: 100;
+}
+.topbar-brand { display: flex; align-items: center; gap: 10px; }
+.topbar-brand .brand-name { font-family: 'Crimson Pro', serif; font-size: 16px; font-weight: 700; color: var(--gold); }
+.topbar-brand .brand-crp { font-size: 9px; color: var(--text3); }
+.topbar-right { display: flex; align-items: center; gap: 8px; }
+.topbar-user { font-size: 10px; color: var(--text2); display: none; }
+@media(min-width:600px) { .topbar-user { display: block; } }
+.btn-sm { font-family: inherit; font-size: 10px; font-weight: 700; padding: 5px 10px; border-radius: 3px; cursor: pointer; border: none; transition: all 0.15s; }
+.btn-logout { background: rgba(153,27,27,0.2); color: #f87171; border: 1px solid rgba(153,27,27,0.3); }
+.btn-logout:hover { background: rgba(153,27,27,0.4); }
 
 /* LAYOUT */
-.app-body{display:flex;flex:1;overflow:hidden;}
+.app-layout { display: flex; flex: 1; overflow: hidden; }
 
-/* DOC TABS - left sidebar */
-.doc-tabs{width:200px;background:var(--surface);border-right:1px solid var(--border2);overflow-y:auto;flex-shrink:0;display:none;}
-@media(min-width:900px){.doc-tabs{display:flex;flex-direction:column;}}
-.tabs-group-label{font-size:9px;letter-spacing:.2em;color:var(--text3);text-transform:uppercase;padding:10px 12px 4px;border-top:1px solid var(--border2);margin-top:4px;}
-.tabs-group-label:first-child{border-top:none;margin-top:0;}
-.tab-btn{display:flex;align-items:center;gap:7px;padding:7px 12px;cursor:pointer;border-left:2px solid transparent;border:none;border-right:none;border-top:none;border-bottom:none;border-left:2px solid transparent;width:100%;background:none;font-family:inherit;font-size:10px;color:var(--text3);text-align:left;line-height:1.3;transition:all .15s;}
-.tab-btn:hover{color:var(--text2);background:var(--surface2);}
-.tab-btn.active{color:var(--amber);background:rgba(245,158,11,.08);border-left-color:var(--amber);}
-.tab-icon{font-size:12px;flex-shrink:0;}
+/* SIDEBAR */
+.sidebar { width: 220px; background: var(--bg2); border-right: 1px solid var(--border2); display: none; flex-direction: column; overflow: hidden; }
+@media(min-width:900px) { .sidebar { display: flex; } }
+.sidebar-scroll { flex: 1; overflow-y: auto; padding: 8px 0; }
+.nav-group { padding: 10px 12px 3px; font-size: 8px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.25em; }
+.nav-item { display: flex; align-items: center; gap: 8px; padding: 8px 14px; cursor: pointer; border-left: 2px solid transparent; border: none; background: none; font-family: inherit; font-size: 10px; color: var(--text3); text-align: left; width: 100%; transition: all 0.15s; border-left: 2px solid transparent; }
+.nav-item:hover { color: var(--text2); background: var(--surface); }
+.nav-item.active { color: var(--gold); background: rgba(201,168,76,0.08); border-left-color: var(--gold); }
+.nav-icon { font-size: 14px; flex-shrink: 0; width: 18px; text-align: center; }
 
-/* SECTION TABS - top within doc (anamnese etc) */
-.sec-tabs-wrap{background:var(--surface2);border-bottom:1px solid var(--border2);overflow-x:auto;flex-shrink:0;display:none;}
-@media(min-width:900px){.sec-tabs-wrap{display:flex;}}
-.sec-tabs{display:flex;gap:0;padding:0 8px;}
-.sec-tab{font-family:inherit;font-size:10px;padding:8px 12px;border:none;background:none;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;}
-.sec-tab:hover{color:var(--text2);}
-.sec-tab.active{color:var(--amber);border-bottom-color:var(--amber);}
+/* MAIN CONTENT */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.view { display: none; flex: 1; overflow: hidden; flex-direction: column; }
+.view.active { display: flex; }
 
-/* CONTENT */
-.content{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
-.content-inner{flex:1;padding:14px;max-width:820px;width:100%;margin:0 auto;padding-bottom:calc(var(--safe-bottom) + 70px);}
+/* ── DASHBOARD ── */
+.dash-scroll { flex: 1; overflow-y: auto; padding: 20px; }
+.dash-welcome { font-family: 'Crimson Pro', serif; font-size: 22px; color: var(--gold); margin-bottom: 4px; }
+.dash-sub { font-size: 10px; color: var(--text3); margin-bottom: 24px; }
+.stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px; }
+@media(min-width:600px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
+.stat-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 6px; padding: 16px; }
+.stat-num { font-family: 'Crimson Pro', serif; font-size: 28px; color: var(--gold); font-weight: 700; }
+.stat-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.15em; margin-top: 2px; }
+.dash-section { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border2); }
+.recent-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+.recent-item { background: var(--surface); border: 1px solid var(--border2); border-radius: 4px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.15s; }
+.recent-item:hover { border-color: var(--gold); }
+.recent-name { font-size: 13px; color: var(--text); font-weight: 500; }
+.recent-info { font-size: 10px; color: var(--text3); margin-top: 2px; }
+.recent-status { font-size: 9px; padding: 3px 8px; border-radius: 10px; font-weight: 700; }
+.status-ativo { background: rgba(22,101,52,0.3); color: var(--green2); }
+.status-concluido { background: rgba(37,99,235,0.2); color: #60a5fa; }
+.status-aguardando { background: rgba(217,119,6,0.2); color: #fbbf24; }
 
-/* Mobile selects */
-.mob-selects{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
-@media(min-width:900px){.mob-selects{display:none;}}
-.mob-sel{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:3px;font-family:inherit;font-size:12px;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23a8a29e' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
+/* ── PACIENTES ── */
+.view-header { padding: 16px 20px; border-bottom: 1px solid var(--border2); display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-shrink: 0; background: var(--bg2); }
+.view-title { font-family: 'Crimson Pro', serif; font-size: 18px; color: var(--gold); }
+.btn-primary { font-family: inherit; font-size: 11px; font-weight: 700; padding: 8px 16px; background: var(--gold); color: #0a0f14; border: none; border-radius: 4px; cursor: pointer; transition: all 0.15s; }
+.btn-primary:hover { background: var(--gold2); }
+.btn-secondary { font-family: inherit; font-size: 11px; font-weight: 700; padding: 8px 16px; background: var(--surface2); color: var(--text2); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; transition: all 0.15s; }
+.btn-secondary:hover { color: var(--text); border-color: var(--gold); }
+.btn-danger { font-family: inherit; font-size: 11px; font-weight: 700; padding: 8px 16px; background: rgba(153,27,27,0.2); color: #f87171; border: 1px solid rgba(153,27,27,0.3); border-radius: 4px; cursor: pointer; }
+.search-bar { padding: 12px 20px; border-bottom: 1px solid var(--border2); flex-shrink: 0; }
+.search-input { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 4px; font-family: inherit; font-size: 12px; }
+.search-input:focus { outline: none; border-color: var(--gold); }
+.list-scroll { flex: 1; overflow-y: auto; padding: 12px 20px; }
+.pac-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 6px; padding: 14px 16px; margin-bottom: 8px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: space-between; }
+.pac-card:hover { border-color: var(--gold); background: var(--surface2); }
+.pac-name { font-size: 14px; color: var(--text); font-weight: 600; font-family: 'Crimson Pro', serif; }
+.pac-info { font-size: 10px; color: var(--text3); margin-top: 2px; }
+.pac-actions { display: flex; gap: 6px; }
+.btn-icon { background: none; border: 1px solid var(--border); color: var(--text3); padding: 5px 8px; border-radius: 3px; cursor: pointer; font-size: 12px; transition: all 0.15s; }
+.btn-icon:hover { color: var(--gold); border-color: var(--gold); }
+.empty-state { text-align: center; padding: 60px 20px; color: var(--text3); }
+.empty-icon { font-size: 40px; margin-bottom: 12px; }
+.empty-text { font-size: 12px; }
 
-/* CARD */
-.card{background:var(--surface);border:1px solid var(--border2);border-radius:4px;margin-bottom:12px;overflow:hidden;}
-.card-head{padding:12px 16px;border-bottom:1px solid var(--border2);display:flex;align-items:flex-start;gap:10px;}
-.card-icon{font-size:20px;color:var(--amber);flex-shrink:0;}
-.card-title{font-size:14px;font-weight:700;color:var(--text);}
-.card-sub{font-size:9px;color:var(--amber);opacity:.7;margin-top:2px;}
-.card-body{padding:16px;display:flex;flex-direction:column;gap:14px;}
+/* ── MODAL ── */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; width: 100%; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.6); }
+.modal-head { padding: 20px 24px; border-bottom: 1px solid var(--border2); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.modal-title { font-family: 'Crimson Pro', serif; font-size: 18px; color: var(--gold); }
+.modal-close { background: none; border: none; color: var(--text3); font-size: 20px; cursor: pointer; padding: 0; line-height: 1; }
+.modal-close:hover { color: var(--text); }
+.modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+.modal-foot { padding: 16px 24px; border-top: 1px solid var(--border2); display: flex; gap: 10px; justify-content: flex-end; flex-shrink: 0; }
 
-/* Fields */
-.fg{display:flex;flex-direction:column;gap:5px;}
-.flabel{font-size:9px;color:var(--text2);text-transform:uppercase;letter-spacing:.15em;}
-.finput,.ftextarea,.fselect{background:var(--field-bg);border:1px solid var(--border);color:var(--text);padding:8px 11px;border-radius:3px;font-family:inherit;font-size:12px;width:100%;transition:border-color .15s;-webkit-appearance:none;}
-.finput:focus,.ftextarea:focus,.fselect:focus{outline:none;border-color:var(--amber);}
-.ftextarea{min-height:72px;resize:vertical;}
-.fselect{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23a8a29e' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-color:var(--field-bg);padding-right:28px;cursor:pointer;}
-.fselect option{background:#1c1917;}
-.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-@media(max-width:500px){.frow{grid-template-columns:1fr;}}
-.frow3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
-@media(max-width:600px){.frow3{grid-template-columns:1fr 1fr;}}
+/* ── FORM FIELDS ── */
+.fg { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+.flabel { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.15em; }
+.finput, .ftextarea, .fselect { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 9px 12px; border-radius: 4px; font-family: inherit; font-size: 12px; width: 100%; transition: border-color 0.15s; -webkit-appearance: none; }
+.finput:focus, .ftextarea:focus, .fselect:focus { outline: none; border-color: var(--gold); }
+.ftextarea { min-height: 80px; resize: vertical; }
+.fselect { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%234a6a8a' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; background-color: var(--bg); padding-right: 28px; cursor: pointer; }
+.fselect option { background: #111820; }
+.frow { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media(max-width:480px) { .frow { grid-template-columns: 1fr; } }
 
-/* Radio */
-.radio-grp{display:flex;gap:14px;flex-wrap:wrap;}
-.radio-opt{display:flex;align-items:center;gap:7px;cursor:pointer;}
-.radio-dot{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
-.radio-dot.on{border-color:var(--amber);background:var(--amber);}
-.radio-dot.on::after{content:'';width:6px;height:6px;border-radius:50%;background:#0c0a09;}
-.radio-lbl{font-size:12px;color:var(--text2);}
+/* ── FICHA PACIENTE ── */
+.pac-detail { flex: 1; overflow-y: auto; }
+.pac-detail-head { padding: 20px; background: var(--surface); border-bottom: 1px solid var(--border2); }
+.pac-detail-name { font-family: 'Crimson Pro', serif; font-size: 24px; color: var(--gold); }
+.pac-detail-info { font-size: 10px; color: var(--text3); margin-top: 4px; }
+.pac-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border2); overflow-x: auto; background: var(--bg2); flex-shrink: 0; }
+.pac-tab { font-family: inherit; font-size: 10px; padding: 10px 16px; border: none; background: none; color: var(--text3); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.15s; }
+.pac-tab:hover { color: var(--text2); }
+.pac-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+.pac-tab-content { flex: 1; overflow-y: auto; padding: 20px; }
 
-/* Subsection */
-.sub-block{background:var(--check-bg);border:1px solid var(--border2);border-radius:3px;padding:12px;}
-.sub-title{font-size:10px;font-weight:700;color:var(--section);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;}
-.checks-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-@media(max-width:460px){.checks-grid{grid-template-columns:1fr;}}
-.chk-opt{display:flex;align-items:center;gap:9px;cursor:pointer;}
-.chk-box{width:16px;height:16px;border-radius:2px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
-.chk-box.on{border-color:var(--amber);background:var(--amber);}
-.chk-box.on::after{content:'✓';color:#0c0a09;font-size:10px;font-weight:900;line-height:1;}
-.chk-lbl{font-size:11px;color:var(--text2);line-height:1.3;}
+/* ── PROGRAMAÇÃO ── */
+.prog-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 6px; padding: 20px; margin-bottom: 12px; }
+.prog-session { display: flex; gap: 14px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--border2); }
+.prog-session:last-child { border-bottom: none; }
+.prog-num { width: 28px; height: 28px; border-radius: 50%; background: var(--gold); color: #0a0f14; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+.prog-num.skip { background: var(--surface2); color: var(--text3); }
+.prog-date { font-size: 12px; color: var(--text); font-weight: 600; }
+.prog-desc { font-size: 11px; color: var(--text3); margin-top: 2px; }
 
-/* Section nav */
-.snav{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-top:1px solid var(--border2);}
-.snav-btn{font-family:inherit;font-size:10px;font-weight:700;padding:7px 14px;border-radius:3px;cursor:pointer;border:none;transition:all .15s;}
-.snav-prev{background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
-.snav-prev:hover:not(:disabled){color:var(--text);}
-.snav-prev:disabled{opacity:.3;cursor:not-allowed;}
-.snav-next{background:var(--amber);color:#0c0a09;font-weight:900;}
-.snav-next:hover:not(:disabled){background:#fbbf24;}
-.snav-next:disabled{opacity:.3;cursor:not-allowed;}
-.snav-cnt{font-size:10px;color:var(--text3);}
+/* ── DOCUMENTOS ── */
+.docs-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+@media(min-width:600px) { .docs-grid { grid-template-columns: repeat(3, 1fr); } }
+.doc-btn { background: var(--surface); border: 1px solid var(--border2); border-radius: 6px; padding: 14px; cursor: pointer; transition: all 0.15s; text-align: left; font-family: inherit; }
+.doc-btn:hover { border-color: var(--gold); background: var(--surface2); }
+.doc-btn-icon { font-size: 20px; margin-bottom: 8px; }
+.doc-btn-label { font-size: 11px; color: var(--text2); font-weight: 600; }
+.doc-btn-desc { font-size: 9px; color: var(--text3); margin-top: 3px; }
 
-/* Export panel */
-.exp-panel{background:var(--surface);border:1px solid var(--border2);border-radius:4px;padding:14px;margin-bottom:12px;}
-.exp-title{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.2em;margin-bottom:10px;}
-.exp-btns{display:flex;flex-direction:column;gap:7px;}
-@media(min-width:460px){.exp-btns{flex-direction:row;}}
-.exp-btn{flex:1;padding:11px;font-family:inherit;font-size:11px;font-weight:700;border:none;border-radius:3px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:7px;}
-.exp-pdf{background:var(--red);color:#fff;} .exp-pdf:hover{background:#dc2626;}
-.exp-word{background:var(--blue);color:#fff;} .exp-word:hover{background:#2563eb;}
-.exp-hint{font-size:9px;color:var(--text3);margin-top:8px;line-height:1.8;}
-.exp-hint strong{color:var(--text2);}
+/* ── AGENDA ── */
+.agenda-scroll { flex: 1; overflow-y: auto; padding: 16px 20px; }
+.agenda-item { background: var(--surface); border: 1px solid var(--border2); border-radius: 6px; padding: 14px 16px; margin-bottom: 8px; display: flex; gap: 14px; align-items: flex-start; }
+.agenda-date-box { background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 6px 10px; text-align: center; flex-shrink: 0; min-width: 50px; }
+.agenda-day { font-family: 'Crimson Pro', serif; font-size: 22px; color: var(--gold); line-height: 1; }
+.agenda-month { font-size: 8px; color: var(--text3); text-transform: uppercase; }
+.agenda-info { flex: 1; }
+.agenda-pac { font-size: 13px; color: var(--text); font-weight: 600; }
+.agenda-hora { font-size: 10px; color: var(--gold); margin-top: 2px; }
+.agenda-tipo { font-size: 10px; color: var(--text3); margin-top: 2px; }
 
-/* Info box */
-.info-box{background:rgba(14,116,144,.1);border:1px solid rgba(14,116,144,.3);border-radius:3px;padding:10px 14px;font-size:10px;color:#67e8f9;line-height:1.7;}
-.warn-box{background:rgba(245,158,11,.05);border:1px solid rgba(245,158,11,.15);border-radius:3px;padding:10px 14px;font-size:10px;color:rgba(245,158,11,.6);text-align:center;}
-.divider{border:none;border-top:1px solid var(--border2);margin:4px 0;}
+/* ── TOAST ── */
+.toast { position: fixed; bottom: calc(var(--safe-bottom) + 20px); left: 50%; transform: translateX(-50%) translateY(80px); background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 10px 20px; border-radius: 20px; font-size: 12px; z-index: 9999; transition: transform 0.3s; white-space: nowrap; }
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.success { border-color: var(--green2); color: var(--green2); }
+.toast.error { border-color: #f87171; color: #f87171; }
 
-/* iOS install banner */
-.install-banner{background:linear-gradient(135deg,#1B4F72,#154360);border:1px solid #2E86C1;border-radius:4px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
-.inst-txt{font-size:10px;color:#AED6F1;line-height:1.5;}
-.inst-txt strong{color:#fff;display:block;margin-bottom:1px;}
-.inst-btn{background:var(--amber);color:#0c0a09;font-family:inherit;font-size:10px;font-weight:700;padding:6px 10px;border:none;border-radius:3px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
-.inst-x{background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:0 3px;flex-shrink:0;}
+/* ── MOBILE NAV ── */
+.mob-nav { display: flex; background: var(--bg2); border-top: 1px solid var(--border2); padding: calc(8px) 0 calc(var(--safe-bottom) + 8px); flex-shrink: 0; }
+@media(min-width:900px) { .mob-nav { display: none; } }
+.mob-nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 4px; cursor: pointer; border: none; background: none; font-family: inherit; color: var(--text3); transition: color 0.15s; }
+.mob-nav-item.active { color: var(--gold); }
+.mob-nav-icon { font-size: 18px; }
+.mob-nav-label { font-size: 8px; letter-spacing: 0.05em; }
 
-::-webkit-scrollbar{width:4px;} ::-webkit-scrollbar-track{background:var(--bg);} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+/* LOADING */
+.loading { display: flex; align-items: center; justify-content: center; padding: 40px; color: var(--text3); gap: 10px; }
+.spinner { width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: var(--bg); } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.dev-badge { padding: 10px 14px 12px; border-top: 1px solid var(--border2); margin-top: auto; flex-shrink: 0; }
+.dev-badge-label { font-size: 7px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 3px; }
+.dev-badge-name { font-size: 10px; font-weight: 700; background: linear-gradient(90deg, #c9a84c, #60a5fa, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: 0.08em; }
+.dev-badge-sub { font-size: 8px; color: var(--text3); margin-top: 1px; letter-spacing: 0.1em; }
 </style>
 </head>
 <body>
 
-<header class="app-header">
-  <div class="hdr-left">
-    <div class="lbl">Sistema Clínico</div>
-    <h1>Eveline Mourão</h1>
-    <div class="crp">Psicóloga · CRP 11/24832</div>
-  </div>
-  <div class="hdr-right">
-    <div class="prog-wrap">
-      <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
-      <span class="prog-pct" id="progPct">0%</span>
+<!-- ── LOGIN ── -->
+<div id="loginScreen" class="screen active">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="name">Eveline Mourão</div>
+      <div class="crp">CRP 11/24832 · Psicóloga / Neuropsicóloga</div>
+      <div class="divider"></div>
+      <div class="system">Sistema Clínico</div>
     </div>
-    <button class="btn btn-ghost" onclick="newForm()">Nova</button>
-    <button class="btn btn-save" id="saveBtn" onclick="saveAll()">Salvar</button>
-    <button class="btn btn-word" onclick="exportWord()">⬇ .doc</button>
-    <button class="btn btn-pdf" onclick="exportPDF()">⬇ PDF</button>
-  </div>
-</header>
-
-<div class="app-body">
-  <!-- LEFT SIDEBAR: Document list -->
-  <nav class="doc-tabs" id="docTabs"></nav>
-
-  <div class="content" id="mainContent">
-    <!-- TOP TABS: sections within a doc -->
-    <div class="sec-tabs-wrap" id="secTabsWrap"><div class="sec-tabs" id="secTabs"></div></div>
-    <div class="content-inner" id="contentInner"></div>
+    <div class="login-field">
+      <label>E-mail</label>
+      <input type="email" id="loginEmail" placeholder="seu@email.com" autocomplete="email" onchange="localStorage.setItem('saved_email',this.value)"/>
+    </div>
+    <div class="login-field">
+      <label>Senha</label>
+      <div class="pass-wrap">
+        <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password"/>
+        <button class="pass-toggle" type="button" onclick="togglePass('loginPass',this)" tabindex="-1">👁️</button>
+      </div>
+    </div>
+    <div class="forgot-link" onclick="showScreen('forgotScreen')">Esqueceu a senha?</div>
+    <button class="btn-login" onclick="doLogin()">Entrar</button>
+    <div class="login-err" id="loginErr"></div>
+    <div class="login-new">Não tem conta? <a onclick="showScreen('registerScreen')">Criar conta</a></div>
+    <div style="text-align:center;margin-top:24px;padding-top:16px;border-top:1px solid var(--border2)">
+      <div style="font-size:7px;color:var(--text3);letter-spacing:.2em;text-transform:uppercase;margin-bottom:3px">Desenvolvido por</div>
+      <div style="font-size:11px;font-weight:700;background:linear-gradient(90deg,#c9a84c,#60a5fa,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:.08em">AMV tech labs</div>
+    </div>
   </div>
 </div>
+
+<!-- ── REGISTRO ── -->
+<div id="registerScreen" class="screen">
+  <div class="reg-card">
+    <div class="reg-title">Criar conta</div>
+    <div class="fg"><div class="flabel">Nome completo</div><input class="finput" id="regNome" placeholder="Nome"/></div>
+    <div class="fg"><div class="flabel">E-mail</div><input class="finput" type="email" id="regEmail" placeholder="email@exemplo.com"/></div>
+    <div class="fg"><div class="flabel">Senha</div>
+      <div class="pass-wrap"><input class="finput" type="password" id="regPass" placeholder="Mínimo 6 caracteres"/>
+      <button class="pass-toggle" type="button" onclick="togglePass('regPass',this)" tabindex="-1">👁️</button></div></div>
+    <div class="fg"><div class="flabel">Perfil</div>
+      <select class="fselect" id="regPerfil">
+        <option value="admin">Administrador (acesso total)</option>
+        <option value="assistente">Assistente (acesso limitado)</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="btn-secondary" style="flex:1" onclick="showScreen('loginScreen')">Voltar</button>
+      <button class="btn-primary" style="flex:1" onclick="doRegister()">Criar conta</button>
+    </div>
+    <div class="login-err" id="regErr"></div>
+  </div>
+</div>
+
+<!-- ── ESQUECEU SENHA ── -->
+<div id="forgotScreen" class="screen">
+  <div class="forgot-card">
+    <div class="forgot-icon">🔑</div>
+    <div class="forgot-title">Recuperar Senha</div>
+    <div class="forgot-desc">Digite seu e-mail cadastrado.<br>Enviaremos um link para criar uma nova senha.</div>
+    <div class="login-field">
+      <label>E-mail</label>
+      <input type="email" id="forgotEmail" placeholder="seu@email.com" autocomplete="email"/>
+    </div>
+    <button class="btn-login" onclick="doForgotPass()">Enviar Link de Recuperação</button>
+    <div class="forgot-success" id="forgotSuccess">
+      ✅ E-mail enviado!<br>Verifique sua caixa de entrada e também a pasta de <strong>spam</strong>.<br>Clique no link para criar sua nova senha.
+    </div>
+    <div class="login-err" id="forgotErr"></div>
+    <div class="login-new" style="margin-top:16px"><a onclick="showScreen('loginScreen')">← Voltar ao login</a></div>
+  </div>
+</div>
+
+<!-- ── APP ── -->
+<div id="appScreen" class="screen">
+  <div class="topbar">
+    <div class="topbar-brand">
+      <div>
+        <div class="brand-name">Eveline Mourão</div>
+        <div class="brand-crp">CRP 11/24832</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-user" id="topbarUser"></span>
+      <button class="btn-sm btn-logout" onclick="doLogout()">Sair</button>
+    </div>
+  </div>
+
+  <div class="app-layout">
+    <!-- SIDEBAR -->
+    <nav class="sidebar">
+      <div class="sidebar-scroll">
+        <div class="nav-group">Principal</div>
+        <button class="nav-item active" onclick="showView('dashboard')" id="nav-dashboard"><span class="nav-icon">🏠</span>Dashboard</button>
+        <button class="nav-item" onclick="showView('pacientes')" id="nav-pacientes"><span class="nav-icon">👥</span>Pacientes</button>
+        <button class="nav-item" onclick="showView('agenda')" id="nav-agenda"><span class="nav-icon">📅</span>Agenda</button>
+        <div class="nav-group">Documentos</div>
+        <button class="nav-item" onclick="showView('documentos')" id="nav-documentos"><span class="nav-icon">📄</span>Documentos</button>
+        <button class="nav-item" onclick="showView('programacao')" id="nav-programacao"><span class="nav-icon">📋</span>Programação</button>
+        <div class="nav-group">Sistema</div>
+        <button class="nav-item" onclick="showView('usuarios')" id="nav-usuarios"><span class="nav-icon">🔐</span>Usuários</button>
+        <button class="nav-item" onclick="showView('auditoria')" id="nav-auditoria"><span class="nav-icon">📊</span>Auditoria</button>
+      </div>
+      <div class="dev-badge">
+        <div class="dev-badge-label">Desenvolvido por</div>
+        <div class="dev-badge-name">AMV tech labs</div>
+        <div class="dev-badge-sub">v1.0 · 2025</div>
+      </div>
+    </nav>
+
+    <!-- MAIN -->
+    <div class="main">
+
+      <!-- DASHBOARD -->
+      <div class="view active" id="view-dashboard">
+        <div class="dash-scroll">
+          <div class="dash-welcome" id="dashWelcome">Bem-vinda!</div>
+          <div class="dash-sub" id="dashDate"></div>
+          <div class="stats-grid">
+            <div class="stat-card"><div class="stat-num" id="statTotal">0</div><div class="stat-label">Pacientes</div></div>
+            <div class="stat-card"><div class="stat-num" id="statAtivos">0</div><div class="stat-label">Em Avaliação</div></div>
+            <div class="stat-card"><div class="stat-num" id="statConcluidos">0</div><div class="stat-label">Concluídos</div></div>
+            <div class="stat-card"><div class="stat-num" id="statHoje">0</div><div class="stat-label">Hoje</div></div>
+          </div>
+          <div class="dash-section">Pacientes Recentes</div>
+          <div class="recent-list" id="recentList"><div class="loading"><div class="spinner"></div> Carregando...</div></div>
+        </div>
+      </div>
+
+      <!-- PACIENTES -->
+      <div class="view" id="view-pacientes">
+        <div class="view-header">
+          <div class="view-title">Pacientes</div>
+          <button class="btn-primary" onclick="openModal('novoPacModal')">+ Novo Paciente</button>
+        </div>
+        <div class="search-bar">
+          <input class="search-input" placeholder="🔍 Buscar paciente..." oninput="filterPacientes(this.value)" id="searchInput"/>
+        </div>
+        <div class="list-scroll" id="pacList"><div class="loading"><div class="spinner"></div></div></div>
+      </div>
+
+      <!-- PACIENTE DETALHE -->
+      <div class="view" id="view-paciente-detalhe">
+        <div class="view-header" style="gap:10px">
+          <button class="btn-secondary" onclick="showView('pacientes')">← Voltar</button>
+          <div class="view-title" id="detalheName">Paciente</div>
+          <button class="btn-primary" onclick="exportDocAtual()">⬇ Exportar</button>
+        </div>
+        <div class="pac-tabs" id="pacTabs">
+          <button class="pac-tab active" onclick="showPacTab('info')">Informações</button>
+          <button class="pac-tab" onclick="showPacTab('docs')">Documentos</button>
+          <button class="pac-tab" onclick="showPacTab('prog')">Programação</button>
+          <button class="pac-tab" onclick="showPacTab('historico')">Histórico</button>
+          <button class="pac-tab" onclick="showPacTab('financeiro')">Financeiro</button>
+        </div>
+        <div class="pac-tab-content" id="pacTabContent"></div>
+      </div>
+
+      <!-- AGENDA -->
+      <div class="view" id="view-agenda">
+        <div class="view-header">
+          <div class="view-title">Agenda</div>
+          <button class="btn-primary" onclick="openModal('novoAgendModal')">+ Agendar</button>
+        </div>
+        <div class="agenda-scroll" id="agendaList"><div class="loading"><div class="spinner"></div></div></div>
+      </div>
+
+      <!-- DOCUMENTOS -->
+      <div class="view" id="view-documentos">
+        <div class="view-header"><div class="view-title">Documentos</div></div>
+        <div class="pac-tab-content">
+          <p style="font-size:11px;color:var(--text3);margin-bottom:16px;">Selecione um paciente para gerar documentos, ou gere modelos em branco:</p>
+          <div class="docs-grid">
+            <button class="doc-btn" onclick="gerarDocumento('anamnese')"><div class="doc-btn-icon">◈</div><div class="doc-btn-label">Anamnese</div><div class="doc-btn-desc">Ficha neuropsicológica</div></button>
+            <button class="doc-btn" onclick="gerarDocumento('tcle')"><div class="doc-btn-icon">📋</div><div class="doc-btn-label">TCLE</div><div class="doc-btn-desc">Termo de consentimento</div></button>
+            <button class="doc-btn" onclick="gerarDocumento('contrato')"><div class="doc-btn-icon">📄</div><div class="doc-btn-label">Contrato</div><div class="doc-btn-desc">Contrato de serviços</div></button>
+            <button class="doc-btn" onclick="gerarDocumento('laudo')"><div class="doc-btn-icon">📊</div><div class="doc-btn-label">Laudo</div><div class="doc-btn-desc">Laudo neuropsicológico</div></button>
+            <button class="doc-btn" onclick="gerarDocumento('relatorio')"><div class="doc-btn-icon">📃</div><div class="doc-btn-label">Relatório</div><div class="doc-btn-desc">Relatório clínico</div></button>
+            <button class="doc-btn" onclick="gerarDocumento('evolucao')"><div class="doc-btn-icon">📝</div><div class="doc-btn-label">Evolução</div><div class="doc-btn-desc">Evolução de sessão</div></button>
+            <button class="doc-btn" onclick="gerarDocumento('declaracao')"><div class="doc-btn-icon">📜</div><div class="doc-btn-label">Declaração</div><div class="doc-btn-desc">Declaração clínica</div></button>
+            <button class="doc-btn" onclick="gerarDocumento('parecer')"><div class="doc-btn-icon">⚖️</div><div class="doc-btn-label">Parecer</div><div class="doc-btn-desc">Parecer técnico</div></button>
+            <button class="doc-btn" onclick="gerarDocumento('programacao')"><div class="doc-btn-icon">📅</div><div class="doc-btn-label">Programação</div><div class="doc-btn-desc">Cronograma avaliação</div></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROGRAMAÇÃO -->
+      <div class="view" id="view-programacao">
+        <div class="view-header">
+          <div class="view-title">Programação de Avaliação</div>
+          <button class="btn-primary" onclick="openModal('progModal')">+ Nova Programação</button>
+        </div>
+        <div class="pac-tab-content" id="progList"><div class="loading"><div class="spinner"></div></div></div>
+      </div>
+
+      <!-- USUÁRIOS -->
+      <div class="view" id="view-usuarios">
+        <div class="view-header"><div class="view-title">Usuários do Sistema</div></div>
+        <div class="pac-tab-content">
+          <div id="usersList"><div class="loading"><div class="spinner"></div></div></div>
+        </div>
+      </div>
+
+      <!-- AUDITORIA -->
+      <div class="view" id="view-auditoria">
+        <div class="view-header">
+          <div class="view-title">Relatório de Auditoria</div>
+          <button class="btn-primary" onclick="exportarAuditoria()">⬇ Exportar PDF</button>
+        </div>
+        <div class="audit-filter">
+          <div class="fg" style="margin:0"><div class="flabel">De</div><input class="finput" type="date" id="auditDe" style="width:140px"/></div>
+          <div class="fg" style="margin:0"><div class="flabel">Até</div><input class="finput" type="date" id="auditAte" style="width:140px"/></div>
+          <div class="fg" style="margin:0"><div class="flabel">Usuário</div>
+            <select class="fselect" id="auditUsuario" style="width:160px">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div class="fg" style="margin:0"><div class="flabel">Módulo</div>
+            <select class="fselect" id="auditModulo" style="width:140px">
+              <option value="">Todos</option>
+              <option value="login">Login</option>
+              <option value="pacientes">Pacientes</option>
+              <option value="agenda">Agenda</option>
+              <option value="documentos">Documentos</option>
+              <option value="programacao">Programação</option>
+            </select>
+          </div>
+          <button class="btn-primary" onclick="loadAuditoria()">Filtrar</button>
+        </div>
+        <div id="auditoriaStats" style="display:none;padding:12px 20px;border-bottom:1px solid var(--border2);background:var(--bg2);flex-shrink:0">
+          <div style="display:flex;gap:16px;flex-wrap:wrap">
+            <div style="font-size:10px;color:var(--text3)">Total: <strong id="auditTotal" style="color:var(--gold)">0</strong> registros</div>
+            <div style="font-size:10px;color:var(--text3)">Logins: <strong id="auditLogins" style="color:#60a5fa">0</strong></div>
+            <div style="font-size:10px;color:var(--text3)">Criações: <strong id="auditCriações" style="color:var(--green2)">0</strong></div>
+            <div style="font-size:10px;color:var(--text3)">Exportações: <strong id="auditExports" style="color:#c084fc">0</strong></div>
+            <div style="font-size:10px;color:var(--text3)">Exclusões: <strong id="auditExclusoes" style="color:#f87171">0</strong></div>
+          </div>
+        </div>
+        <div class="list-scroll" id="auditoriaList"><div class="loading"><div class="spinner"></div></div></div>
+      </div>
+
+    </div><!-- /main -->
+  </div><!-- /app-layout -->
+
+  <!-- MOBILE NAV -->
+  <div class="mob-nav">
+    <button class="mob-nav-item active" onclick="showView('dashboard')" id="mnav-dashboard"><div class="mob-nav-icon">🏠</div><div class="mob-nav-label">Início</div></button>
+    <button class="mob-nav-item" onclick="showView('pacientes')" id="mnav-pacientes"><div class="mob-nav-icon">👥</div><div class="mob-nav-label">Pacientes</div></button>
+    <button class="mob-nav-item" onclick="showView('agenda')" id="mnav-agenda"><div class="mob-nav-icon">📅</div><div class="mob-nav-label">Agenda</div></button>
+    <button class="mob-nav-item" onclick="showView('documentos')" id="mnav-documentos"><div class="mob-nav-icon">📄</div><div class="mob-nav-label">Docs</div></button>
+    <button class="mob-nav-item" onclick="showView('programacao')" id="mnav-programacao"><div class="mob-nav-icon">📋</div><div class="mob-nav-label">Progr.</div></button>
+    <button class="mob-nav-item" onclick="showView('auditoria')" id="mnav-auditoria"><div class="mob-nav-icon">📊</div><div class="mob-nav-label">Audit.</div></button>
+  </div>
+</div>
+
+<!-- ── MODALS ── -->
+
+<!-- Novo Paciente -->
+<div class="modal-overlay" id="novoPacModal">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-title">Novo Paciente</div><button class="modal-close" onclick="closeModal('novoPacModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="frow">
+        <div class="fg"><div class="flabel">Nome completo *</div><input class="finput" id="pacNome" placeholder="Nome do paciente"/></div>
+        <div class="fg"><div class="flabel">Data de nascimento</div><input class="finput" type="date" id="pacNasc"/></div>
+      </div>
+      <div class="frow">
+        <div class="fg"><div class="flabel">Telefone</div><input class="finput" type="tel" id="pacTel" placeholder="(00) 00000-0000"/></div>
+        <div class="fg"><div class="flabel">E-mail</div><input class="finput" type="email" id="pacEmail" placeholder="email@exemplo.com"/></div>
+      </div>
+      <div class="frow">
+        <div class="fg"><div class="flabel">Sexo</div>
+          <select class="fselect" id="pacSexo"><option value="">Selecione</option><option>Masculino</option><option>Feminino</option><option>Não-binário</option><option>Outro</option></select>
+        </div>
+        <div class="fg"><div class="flabel">Status</div>
+          <select class="fselect" id="pacStatus"><option value="aguardando">Aguardando</option><option value="ativo">Em Avaliação</option><option value="concluido">Concluído</option></select>
+        </div>
+      </div>
+      <div class="fg"><div class="flabel">Tipo de atendimento</div>
+        <select class="fselect" id="pacTipo"><option value="">Selecione</option><option>Avaliação Neuropsicológica</option><option>Psicoterapia</option><option>Orientação de Pais</option><option>Triagem</option><option>Outro</option></select>
+      </div>
+      <div class="fg"><div class="flabel">Encaminhamento</div><input class="finput" id="pacEncam" placeholder="Quem encaminhou"/></div>
+      <div class="fg"><div class="flabel">Observações iniciais</div><textarea class="ftextarea" id="pacObs" placeholder="Anotações iniciais sobre o caso..."></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-secondary" onclick="closeModal('novoPacModal')">Cancelar</button>
+      <button class="btn-primary" onclick="salvarPaciente()">Salvar Paciente</button>
+    </div>
+  </div>
+</div>
+
+<!-- Novo Agendamento -->
+<div class="modal-overlay" id="novoAgendModal">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-title">Novo Agendamento</div><button class="modal-close" onclick="closeModal('novoAgendModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="fg"><div class="flabel">Paciente *</div><select class="fselect" id="agendPac"><option value="">Selecione o paciente</option></select></div>
+      <div class="frow">
+        <div class="fg"><div class="flabel">Data *</div><input class="finput" type="date" id="agendData"/></div>
+        <div class="fg"><div class="flabel">Horário *</div><input class="finput" type="time" id="agendHora"/></div>
+      </div>
+      <div class="fg"><div class="flabel">Tipo de sessão</div>
+        <select class="fselect" id="agendTipo">
+          <option>Entrevista inicial / Anamnese</option><option>Avaliação cognitiva</option><option>Aplicação de testes</option>
+          <option>Funções executivas / Atenção / Memória</option><option>Avaliação emocional</option><option>Entrevista complementar</option>
+          <option>Devolutiva</option><option>Psicoterapia</option><option>Outro</option>
+        </select>
+      </div>
+      <div class="fg"><div class="flabel">Modalidade</div>
+        <select class="fselect" id="agendModal"><option>Presencial</option><option>Online</option></select>
+      </div>
+      <div class="fg"><div class="flabel">Observações</div><textarea class="ftextarea" id="agendObs" placeholder="Observações sobre a sessão..."></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-secondary" onclick="closeModal('novoAgendModal')">Cancelar</button>
+      <button class="btn-primary" onclick="salvarAgendamento()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Programação -->
+<div class="modal-overlay" id="progModal">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-title">Nova Programação de Avaliação</div><button class="modal-close" onclick="closeModal('progModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="fg"><div class="flabel">Paciente *</div><select class="fselect" id="progPac"><option value="">Selecione</option></select></div>
+      <div class="frow">
+        <div class="fg"><div class="flabel">Data da 1ª sessão *</div><input class="finput" type="date" id="progDataInicio"/></div>
+        <div class="fg"><div class="flabel">Horário fixo</div><input class="finput" type="time" id="progHora" value="15:00"/></div>
+      </div>
+      <div class="frow">
+        <div class="fg"><div class="flabel">Dia da semana</div>
+          <select class="fselect" id="progDia"><option value="1">Segunda-feira</option><option value="2">Terça-feira</option><option value="3">Quarta-feira</option><option value="4">Quinta-feira</option><option value="5">Sexta-feira</option></select>
+        </div>
+        <div class="fg"><div class="flabel">Nº de sessões</div><input class="finput" type="number" id="progNSessoes" value="10" min="1" max="20"/></div>
+      </div>
+      <div class="fg"><div class="flabel">Valor total (R$)</div><input class="finput" id="progValor" placeholder="3500,00"/></div>
+      <div class="fg"><div class="flabel">Desconto PIX (%)</div><input class="finput" id="progDescPix" value="5"/></div>
+      <div class="fg"><div class="flabel">Parcelas cartão</div><input class="finput" id="progParcelas" value="3"/></div>
+      <div class="fg"><div class="flabel">Observações / datas sem atendimento</div><textarea class="ftextarea" id="progObs" placeholder="Ex: 18/05 sem atendimento por indisponibilidade de agenda"></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-secondary" onclick="closeModal('progModal')">Cancelar</button>
+      <button class="btn-primary" onclick="salvarProgramacao()">Gerar Programação</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
 
 <script>
 // ═══════════════════════════════════════════════════════════════
-// PROFESSIONAL INFO
+// SUPABASE CONFIG
 // ═══════════════════════════════════════════════════════════════
-const PROF = {
-  nome: "Eveline Mourão",
-  crp: "CRP 11/24832",
-  titulo: "Psicóloga / Neuropsicóloga",
-  cidade: "Fortaleza – CE",
-};
+const SB_URL = "https://pedfddcgyidarikrpnkz.supabase.co";
+const SB_KEY = "sb_publishable_xhZ-90wneZlhMAytvbRsLA_cXSzzNUB";
 
-// ═══════════════════════════════════════════════════════════════
-// DOCUMENT REGISTRY
-// ═══════════════════════════════════════════════════════════════
-const DOCS = [
-  { id:"anamnese",    label:"Anamnese",                   icon:"◈", group:"Avaliação" },
-  { id:"heteroanam", label:"Heteroanamnese",              icon:"◉", group:"Avaliação" },
-  { id:"obsClinica",  label:"Obs. Clínica",               icon:"◎", group:"Avaliação" },
-  { id:"protocolos",  label:"Protocolos de Testes",       icon:"◐", group:"Avaliação" },
-  { id:"planilha",    label:"Planilha de Correção",       icon:"◑", group:"Avaliação" },
-  { id:"tcle",        label:"TCLE",                       icon:"📋", group:"Termos" },
-  { id:"contrato",    label:"Contrato",                   icon:"📄", group:"Termos" },
-  { id:"autorizacao", label:"Autorização p/ Terceiros",   icon:"🤝", group:"Termos" },
-  { id:"termoMenor",  label:"Termo – Menor de Idade",     icon:"👶", group:"Termos" },
-  { id:"evolucao",    label:"Evolução de Sessão",         icon:"📝", group:"Sessões" },
-  { id:"devolutiva",  label:"Reg. de Devolutiva",         icon:"🔄", group:"Sessões" },
-  { id:"prontuario",  label:"Prontuário Psicológico",     icon:"🗂️", group:"Prontuário" },
-  { id:"checklist",   label:"Checklist de Documentos",   icon:"✅", group:"Prontuário" },
-  { id:"laudo",       label:"Laudo Neuropsicológico",     icon:"📊", group:"Documentos Finais" },
-  { id:"relatorio",   label:"Relatório",                  icon:"📃", group:"Documentos Finais" },
-  { id:"parecer",     label:"Parecer",                    icon:"⚖️", group:"Documentos Finais" },
-  { id:"declaracao",  label:"Declaração",                 icon:"📜", group:"Documentos Finais" },
-];
+const PROF = { nome: "Eveline Mourão", crp: "CRP 11/24832", titulo: "Psicóloga / Neuropsicóloga" };
 
-// ═══════════════════════════════════════════════════════════════
-// DOCUMENT DEFINITIONS (sections + fields)
-// ═══════════════════════════════════════════════════════════════
-const DOC_DEFS = {};
+let currentUser = null;
+let pacientes = [];
+let agendamentos = [];
+let currentPaciente = null;
 
-// ── ANAMNESE (18 sections) ──────────────────────────────────────
-DOC_DEFS.anamnese = {
-  sections: [
-    { id:"id", title:"1. Identificação", icon:"◈", fields:[
-      {id:"nome",label:"Nome completo",type:"text"},
-      {id:"dataNasc",label:"Data de nascimento",type:"date"},
-      {id:"idade",label:"Idade",type:"number"},
-      {id:"sexo",label:"Sexo",type:"select",options:["","Masculino","Feminino","Não-binário","Outro"]},
-      {id:"estadoCivil",label:"Estado civil",type:"select",options:["","Solteiro(a)","Casado(a)","Divorciado(a)","Viúvo(a)","União estável","Outro"]},
-      {id:"escolaridade",label:"Escolaridade",type:"select",options:["","Fundamental incompleto","Fundamental completo","Médio incompleto","Médio completo","Superior incompleto","Superior completo","Pós-graduação"]},
-      {id:"profissao",label:"Profissão",type:"text"},
-      {id:"telefone",label:"Telefone",type:"tel"},
-      {id:"email",label:"E-mail",type:"email"},
-      {id:"endereco",label:"Endereço",type:"textarea"},
-      {id:"encaminhamento",label:"Encaminhamento",type:"text"},
-    ]},
-    { id:"motivo", title:"2. Motivo da Avaliação", icon:"◉", fields:[
-      {id:"queixaPrincipal",label:"Queixa principal",type:"textarea"},
-      {id:"tempoOcorrencia",label:"Tempo de ocorrência",type:"text"},
-      {id:"motivoBusca",label:"Motivo da busca atual",type:"textarea"},
-      {id:"hipotesesPrev",label:"Hipóteses diagnósticas prévias",type:"textarea"},
-    ]},
-    { id:"queixa", title:"3. Queixa Clínica", icon:"◎",
-      subsections:[
-        {title:"Atenção / Funções Executivas",prefix:"atencao",checks:["Distração frequente","Procrastinação","Hiperfoco","Impulsividade","Dificuldade de organização","Inquietação interna"]},
-        {title:"Ansiedade",prefix:"ansiedade",checks:["Preocupação excessiva","Tensão muscular","Insônia","Pensamentos acelerados","Pânico"]},
-        {title:"Altas Habilidades / Superdotação",prefix:"altas",checks:["Aprendizado acelerado","Criatividade elevada","Tédio com baixa estimulação","Multipotencialidade","Perfeccionismo"]},
-      ],
-      tocFields:[
-        {id:"obsessoes",label:"Presença de obsessões?",type:"radio",options:["Sim","Não"]},
-        {id:"tiposObs",label:"Tipos de obsessões",type:"textarea"},
-        {id:"compulsoes",label:"Compulsões?",type:"radio",options:["Sim","Não"]},
-        {id:"tempoConsumido",label:"Tempo consumido por dia",type:"text"},
-        {id:"insightToc",label:"Insight",type:"select",options:["","Bom insight","Insight razoável","Insight pobre","Ausência de insight"]},
-      ]
+// ── SUPABASE HELPERS ──
+async function sbFetch(path, opts = {}) {
+  const res = await fetch(`${SB_URL}/rest/v1/${path}`, {
+    headers: {
+      "apikey": SB_KEY,
+      "Authorization": `Bearer ${currentUser?.token || SB_KEY}`,
+      "Content-Type": "application/json",
+      "Prefer": opts.prefer || "return=representation",
+      ...opts.headers
     },
-    { id:"desenv", title:"4. Desenvolvimento", icon:"◐", fields:[
-      {id:"gestacao",label:"Gestação",type:"textarea"},{id:"parto",label:"Parto",type:"textarea"},
-      {id:"marcos",label:"Marcos do desenvolvimento",type:"textarea"},{id:"atrasos",label:"Atrasos?",type:"textarea"},
-    ]},
-    { id:"escolar", title:"5. Escolar", icon:"◑", fields:[
-      {id:"desempenhoEsc",label:"Desempenho",type:"textarea"},{id:"dificuldadesEsc",label:"Dificuldades",type:"textarea"},
-      {id:"destaquesAcad",label:"Destaques acadêmicos",type:"textarea"},
-    ]},
-    { id:"ocup", title:"6. Ocupacional", icon:"◒", fields:[
-      {id:"profissaoAtual",label:"Profissão atual",type:"text"},{id:"dificFun",label:"Dificuldades funcionais",type:"textarea"},
-      {id:"histLaboral",label:"Histórico laboral",type:"textarea"},
-    ]},
-    { id:"mem", title:"7. Memória", icon:"◓", fields:[{id:"queixasCog",label:"Queixas cognitivas",type:"textarea"}]},
-    { id:"humor", title:"8. Humor", icon:"◔", fields:[
-      {id:"diagnostPrev",label:"Diagnósticos prévios",type:"textarea"},{id:"internacoes",label:"Internações",type:"textarea"},
-      {id:"psicoterapia",label:"Psicoterapia",type:"textarea"},
-    ]},
-    { id:"sono", title:"9. Sono", icon:"◕", fields:[
-      {id:"qualidadeSono",label:"Qualidade do sono",type:"select",options:["","Boa","Regular","Ruim","Péssima"]},
-      {id:"horariosSono",label:"Horários",type:"text"},
-      {id:"sonolencia",label:"Sonolência diurna",type:"radio",options:["Sim","Não","Às vezes"]},
-    ]},
-    { id:"subst", title:"10. Substâncias", icon:"○", fields:[
-      {id:"cafeina",label:"Cafeína",type:"text"},{id:"alcool",label:"Álcool",type:"text"},
-      {id:"outrasSubst",label:"Outras substâncias",type:"textarea"},{id:"medicacoes",label:"Medicações atuais",type:"textarea"},
-    ]},
-    { id:"med", title:"11. Histórico Médico", icon:"●", fields:[{id:"condicoesClin",label:"Condições clínicas relevantes",type:"textarea"}]},
-    { id:"fam", title:"12. Família", icon:"◍", fields:[{id:"histFamiliar",label:"Neurodesenvolvimento / psiquiatria na família",type:"textarea"}]},
-    { id:"social", title:"13. Social", icon:"◌", fields:[{id:"funcSocial",label:"Observações",type:"textarea"}]},
-    { id:"triagem", title:"14. Triagem", icon:"⊕", fields:[
-      {id:"tocVsTdah",label:"TOC × TDAH",type:"textarea"},{id:"tdahVsAns",label:"TDAH × Ansiedade",type:"textarea"},
-      {id:"altasVsTdah",label:"Altas Hab. × TDAH",type:"textarea"},{id:"altasVsToc",label:"Altas Hab. × TOC",type:"textarea"},
-    ]},
-    { id:"risco", title:"15. Risco Clínico", icon:"⊗", fields:[
-      {id:"ideacaoSuic",label:"Ideação suicida",type:"textarea"},{id:"automut",label:"Automutilação",type:"textarea"},
-    ]},
-    { id:"obs", title:"16. Obs. Examinador", icon:"⊙", fields:[
-      {id:"aparencia",label:"Aparência",type:"textarea"},{id:"humorClin",label:"Humor",type:"text"},
-      {id:"afeto",label:"Afeto",type:"text"},{id:"fala",label:"Fala",type:"textarea"},
-      {id:"insightClin",label:"Insight",type:"select",options:["","Preservado","Parcialmente preservado","Prejudicado","Ausente"]},
-      {id:"julgamento",label:"Julgamento",type:"select",options:["","Preservado","Parcialmente preservado","Prejudicado","Ausente"]},
-    ]},
-    { id:"expec", title:"17. Expectativas", icon:"⊛", fields:[{id:"expectativas",label:"Expectativas do paciente",type:"textarea"}]},
-    { id:"hipot", title:"18. Hipóteses", icon:"⊜", subtitle:"Uso profissional", fields:[
-      {id:"hipotesesClin",label:"Hipóteses clínicas iniciais",type:"textarea"},
-      {id:"condutaProp",label:"Conduta proposta",type:"textarea"},
-    ]},
-  ]
-};
-
-// ── HETEROANAMNESE ──────────────────────────────────────────────
-DOC_DEFS.heteroanam = { sections:[
-  { id:"info", title:"Informações do Informante", icon:"👤", fields:[
-    {id:"hetNomeInfo",label:"Nome do informante",type:"text"},
-    {id:"hetRelacao",label:"Relação com o paciente",type:"select",options:["","Pai","Mãe","Cônjuge","Filho(a)","Irmão/Irmã","Avô/Avó","Cuidador","Outro"]},
-    {id:"hetTelefone",label:"Telefone do informante",type:"tel"},
-    {id:"hetContatoInfo",label:"Tempo de convivência com o paciente",type:"text"},
-  ]},
-  { id:"queixa", title:"Queixa e Histórico", icon:"📋", fields:[
-    {id:"hetQueixaPrincipal",label:"Queixa principal do informante",type:"textarea"},
-    {id:"hetInicioProblem",label:"Início dos problemas (quando percebeu?)",type:"textarea"},
-    {id:"hetEvolucao",label:"Evolução dos sintomas",type:"textarea"},
-    {id:"hetFatoresAgrav",label:"Fatores que agravam os sintomas",type:"textarea"},
-    {id:"hetFatoresAliv",label:"Fatores que aliviam os sintomas",type:"textarea"},
-  ]},
-  { id:"desenv", title:"Desenvolvimento", icon:"🧒", fields:[
-    {id:"hetGestacao",label:"Gestação (intercorrências, uso de substâncias)",type:"textarea"},
-    {id:"hetParto",label:"Parto e condições de nascimento",type:"textarea"},
-    {id:"hetPrimeirosAnos",label:"Primeiros anos de vida",type:"textarea"},
-    {id:"hetFala",label:"Desenvolvimento da fala e linguagem",type:"textarea"},
-    {id:"hetMotor",label:"Desenvolvimento motor",type:"textarea"},
-    {id:"hetEscolarizacao",label:"Escolarização (início, dificuldades)",type:"textarea"},
-  ]},
-  { id:"comp", title:"Comportamento e Relacionamentos", icon:"🤝", fields:[
-    {id:"hetComportamento",label:"Comportamento em casa",type:"textarea"},
-    {id:"hetSocial",label:"Relacionamentos sociais",type:"textarea"},
-    {id:"hetHumor",label:"Humor e reações emocionais",type:"textarea"},
-    {id:"hetSono",label:"Sono e alimentação",type:"textarea"},
-    {id:"hetAtividades",label:"Atividades e interesses",type:"textarea"},
-  ]},
-  { id:"obs", title:"Observações Finais", icon:"📝", fields:[
-    {id:"hetObs",label:"Outras observações relevantes",type:"textarea"},
-    {id:"hetExpectativas",label:"Expectativas do informante",type:"textarea"},
-  ]},
-]};
-
-// ── OBS CLÍNICA ─────────────────────────────────────────────────
-DOC_DEFS.obsClinica = { sections:[
-  { id:"sessao", title:"Dados da Sessão", icon:"📅", fields:[
-    {id:"obcData",label:"Data da observação",type:"date"},
-    {id:"obcSessaoNum",label:"Número da sessão",type:"number"},
-    {id:"obcDuracao",label:"Duração",type:"text"},
-    {id:"obcLocal",label:"Local",type:"text"},
-  ]},
-  { id:"apres", title:"Apresentação Geral", icon:"👁️",
-    checks2:[
-      {group:"Aparência",prefix:"obcApar",items:["Cuidado com a higiene","Vestimenta adequada","Aspecto geral preservado","Sinais de descuido"]},
-      {group:"Postura e Motricidade",prefix:"obcPost",items:["Postura adequada","Agitação psicomotora","Lentificação motora","Tiques ou estereotipias","Tremores"]},
-    ],
-    fields:[{id:"obcApresObs",label:"Observações sobre apresentação",type:"textarea"}]
-  },
-  { id:"humor", title:"Humor e Afeto", icon:"😐",
-    checks2:[
-      {group:"Humor",prefix:"obcHumor",items:["Eutímico","Deprimido","Eufórico","Irritável","Ansioso","Lábil"]},
-      {group:"Afeto",prefix:"obcAfeto",items:["Congruente","Incongruente","Embotado","Amplificado","Restrito"]},
-    ],
-    fields:[{id:"obcHumorObs",label:"Observações",type:"textarea"}]
-  },
-  { id:"cogn", title:"Cognição e Fala", icon:"🧠",
-    checks2:[
-      {group:"Fala",prefix:"obcFala",items:["Fluente","Lentificada","Acelerada","Coerente","Incoerente","Volume adequado"]},
-      {group:"Pensamento",prefix:"obcPens",items:["Organizado","Desorganizado","Tangencial","Circunstancial","Ideias fixas","Conteúdo persecutório"]},
-    ],
-    fields:[
-      {id:"obcOrientacao",label:"Orientação (tempo/espaço/pessoa)",type:"textarea"},
-      {id:"obcAtencao",label:"Atenção e concentração",type:"textarea"},
-      {id:"obcMemoria",label:"Memória aparente",type:"textarea"},
-      {id:"obcInsight",label:"Insight",type:"select",options:["","Preservado","Parcial","Ausente"]},
-      {id:"obcJulgamento",label:"Julgamento",type:"select",options:["","Preservado","Parcial","Comprometido"]},
-    ]
-  },
-  { id:"comp", title:"Comportamento na Sessão", icon:"📊", fields:[
-    {id:"obcEngajamento",label:"Engajamento e cooperação",type:"select",options:["","Ótimo","Bom","Regular","Baixo","Recusou"]},
-    {id:"obcRespostasTaref",label:"Resposta às tarefas",type:"textarea"},
-    {id:"obcFatigue",label:"Sinais de fadiga ou esforço excessivo",type:"textarea"},
-    {id:"obcComportObs",label:"Outros comportamentos observados",type:"textarea"},
-  ]},
-  { id:"concl", title:"Conclusão da Observação", icon:"📝", fields:[
-    {id:"obcImpressao",label:"Impressão clínica geral",type:"textarea"},
-    {id:"obcConduta",label:"Conduta a partir da observação",type:"textarea"},
-  ]},
-]};
-
-// ── TCLE ─────────────────────────────────────────────────────────
-DOC_DEFS.tcle = { sections:[
-  { id:"dados", title:"Dados do Participante", icon:"📋", fields:[
-    {id:"tcleDataDoc",label:"Data do documento",type:"date"},
-    {id:"tcleNomePart",label:"Nome do participante (se diferente)",type:"text",placeholder:"Deixar em branco para usar nome da anamnese"},
-    {id:"tcleFinalidade",label:"Finalidade da avaliação",type:"textarea"},
-    {id:"tcleProcedimentos",label:"Procedimentos a serem realizados",type:"textarea"},
-  ]},
-  { id:"info", title:"Informações ao Participante", icon:"ℹ️", fields:[
-    {id:"tcleBeneficios",label:"Benefícios esperados",type:"textarea"},
-    {id:"tcleRiscos",label:"Riscos e desconfortos possíveis",type:"textarea"},
-    {id:"tcleConfidencialidade",label:"Confidencialidade e sigilo",type:"textarea"},
-    {id:"tcleDireitoDesistir",label:"Direito de desistir",type:"textarea"},
-    {id:"tcleContatoPsic",label:"Contato da psicóloga para dúvidas",type:"text"},
-  ]},
-  { id:"assin", title:"Assinatura", icon:"✍️", fields:[
-    {id:"tcleLocalData",label:"Local e data",type:"text"},
-    {id:"tcleObs",label:"Observações adicionais",type:"textarea"},
-  ]},
-]};
-
-// ── CONTRATO ─────────────────────────────────────────────────────
-DOC_DEFS.contrato = { sections:[
-  { id:"partes", title:"Partes do Contrato", icon:"📄", fields:[
-    {id:"ctDataContrato",label:"Data do contrato",type:"date"},
-    {id:"ctNomeResponsavel",label:"Nome do responsável financeiro (se diferente)",type:"text"},
-    {id:"ctCpfResponsavel",label:"CPF do responsável",type:"text"},
-    {id:"ctEndereco",label:"Endereço do contratante",type:"textarea"},
-  ]},
-  { id:"servicos", title:"Serviços e Honorários", icon:"💰", fields:[
-    {id:"ctTipoServico",label:"Tipo de serviço",type:"select",options:["","Avaliação Neuropsicológica","Psicoterapia","Orientação de Pais","Triagem","Outro"]},
-    {id:"ctValorSessao",label:"Valor por sessão (R$)",type:"text"},
-    {id:"ctNumSessoes",label:"Número previsto de sessões",type:"text"},
-    {id:"ctValorTotal",label:"Valor total estimado (R$)",type:"text"},
-    {id:"ctFormaPagamento",label:"Forma de pagamento",type:"select",options:["","À vista","Parcelado","Por sessão","Outro"]},
-    {id:"ctVencimento",label:"Vencimento",type:"text"},
-  ]},
-  { id:"regras", title:"Regras e Cancelamento", icon:"📋", fields:[
-    {id:"ctCancelamento",label:"Política de cancelamento",type:"textarea"},
-    {id:"ctAtraso",label:"Política de atraso",type:"textarea"},
-    {id:"ctConfidencial",label:"Cláusula de confidencialidade",type:"textarea"},
-    {id:"ctObs",label:"Observações adicionais",type:"textarea"},
-  ]},
-]};
-
-// ── AUTORIZAÇÃO TERCEIROS ─────────────────────────────────────────
-DOC_DEFS.autorizacao = { sections:[
-  { id:"dados", title:"Autorização para Contato com Terceiros", icon:"🤝", fields:[
-    {id:"autDataDoc",label:"Data",type:"date"},
-    {id:"autNomeAutorizado",label:"Nome da pessoa autorizada",type:"text"},
-    {id:"autRelacao",label:"Relação com o paciente",type:"text"},
-    {id:"autTelefone",label:"Telefone da pessoa autorizada",type:"tel"},
-    {id:"autFinalidade",label:"Finalidade do contato",type:"textarea"},
-    {id:"autRestricoes",label:"Restrições / limitações",type:"textarea"},
-    {id:"autValidadeDoc",label:"Validade deste documento",type:"text"},
-    {id:"autObs",label:"Observações",type:"textarea"},
-  ]},
-]};
-
-// ── TERMO MENOR ──────────────────────────────────────────────────
-DOC_DEFS.termoMenor = { sections:[
-  { id:"dados", title:"Termo de Responsabilidade – Menor de Idade", icon:"👶", fields:[
-    {id:"tmDataDoc",label:"Data",type:"date"},
-    {id:"tmNomeResponsavel",label:"Nome do responsável legal",type:"text"},
-    {id:"tmGrauParentesco",label:"Grau de parentesco",type:"select",options:["","Pai","Mãe","Avô/Avó","Tutor(a)","Guardião(ã)","Outro"]},
-    {id:"tmCpfResponsavel",label:"CPF do responsável",type:"text"},
-    {id:"tmTelefone",label:"Telefone",type:"tel"},
-    {id:"tmNomeMenor",label:"Nome do menor",type:"text"},
-    {id:"tmDataNascMenor",label:"Data de nascimento do menor",type:"date"},
-    {id:"tmEscola",label:"Escola (se aplicável)",type:"text"},
-    {id:"tmAutorizacoesEsp",label:"Autorizações específicas concedidas",type:"textarea"},
-    {id:"tmRestricoes",label:"Restrições",type:"textarea"},
-    {id:"tmObs",label:"Observações",type:"textarea"},
-  ]},
-]};
-
-// ── EVOLUÇÃO DE SESSÃO ───────────────────────────────────────────
-DOC_DEFS.evolucao = { sections:[
-  { id:"dados", title:"Dados da Sessão", icon:"📅", fields:[
-    {id:"evData",label:"Data",type:"date"},
-    {id:"evSessaoNum",label:"Nº da sessão",type:"number"},
-    {id:"evDuracao",label:"Duração",type:"text"},
-    {id:"evModalidade",label:"Modalidade",type:"select",options:["","Presencial","Online","Domiciliar"]},
-  ]},
-  { id:"conteudo", title:"Conteúdo da Sessão", icon:"💬", fields:[
-    {id:"evQueixaHoje",label:"Queixa / demanda trazida hoje",type:"textarea"},
-    {id:"evConteudoSessao",label:"Conteúdo trabalhado na sessão",type:"textarea"},
-    {id:"evIntervencoes",label:"Intervenções realizadas",type:"textarea"},
-    {id:"evReacaoPac",label:"Reação do paciente",type:"textarea"},
-  ]},
-  { id:"avali", title:"Avaliação e Conduta", icon:"📊", fields:[
-    {id:"evHumorSessao",label:"Humor / estado geral na sessão",type:"text"},
-    {id:"evProgressos",label:"Progressos observados",type:"textarea"},
-    {id:"evDificuldades",label:"Dificuldades",type:"textarea"},
-    {id:"evConduta",label:"Conduta / próximos passos",type:"textarea"},
-    {id:"evTarefas",label:"Tarefas para próxima sessão",type:"textarea"},
-  ]},
-]};
-
-// ── DEVOLUTIVA ───────────────────────────────────────────────────
-DOC_DEFS.devolutiva = { sections:[
-  { id:"dados", title:"Dados da Devolutiva", icon:"🔄", fields:[
-    {id:"devData",label:"Data",type:"date"},
-    {id:"devParticipantes",label:"Participantes presentes",type:"textarea"},
-    {id:"devModalidade",label:"Modalidade",type:"select",options:["","Presencial","Online"]},
-    {id:"devDuracao",label:"Duração",type:"text"},
-  ]},
-  { id:"conteudo", title:"Conteúdo da Devolutiva", icon:"📋", fields:[
-    {id:"devResultados",label:"Resultados apresentados",type:"textarea"},
-    {id:"devDiagnosticos",label:"Diagnósticos / hipóteses comunicados",type:"textarea"},
-    {id:"devOrientacoes",label:"Orientações fornecidas",type:"textarea"},
-    {id:"devEncaminhamentos",label:"Encaminhamentos realizados",type:"textarea"},
-    {id:"devReacaoPac",label:"Reação do paciente / responsável",type:"textarea"},
-    {id:"devObs",label:"Observações",type:"textarea"},
-  ]},
-]};
-
-// ── PRONTUÁRIO ───────────────────────────────────────────────────
-DOC_DEFS.prontuario = { sections:[
-  { id:"dados", title:"Dados do Prontuário", icon:"🗂️", fields:[
-    {id:"pronNumero",label:"Número do prontuário",type:"text"},
-    {id:"pronDataAbert",label:"Data de abertura",type:"date"},
-    {id:"pronTipoAtend",label:"Tipo de atendimento",type:"select",options:["","Avaliação","Psicoterapia","Acompanhamento","Outro"]},
-    {id:"pronConvenio",label:"Convênio / particular",type:"text"},
-    {id:"pronMedResp",label:"Médico responsável (se houver)",type:"text"},
-    {id:"pronContatoEmerg",label:"Contato de emergência",type:"text"},
-    {id:"pronTelEmerg",label:"Telefone de emergência",type:"tel"},
-  ]},
-  { id:"historico", title:"Histórico Resumido", icon:"📝", fields:[
-    {id:"pronHistorico",label:"Histórico clínico resumido",type:"textarea"},
-    {id:"pronDiagnosticos",label:"Diagnósticos estabelecidos (CID/DSM)",type:"textarea"},
-    {id:"pronMedAtual",label:"Medicações em uso",type:"textarea"},
-    {id:"pronAlergias",label:"Alergias e contraindicações",type:"textarea"},
-  ]},
-  { id:"evolucao", title:"Acompanhamento", icon:"📈", fields:[
-    {id:"pronUltimaSessao",label:"Data da última sessão",type:"date"},
-    {id:"pronProxSessao",label:"Data da próxima sessão",type:"date"},
-    {id:"pronSituacaoAtual",label:"Situação atual do paciente",type:"textarea"},
-    {id:"pronObs",label:"Observações do prontuário",type:"textarea"},
-  ]},
-]};
-
-// ── PROTOCOLOS DE TESTES ─────────────────────────────────────────
-DOC_DEFS.protocolos = { sections:[
-  { id:"dados", title:"Registro de Protocolos", icon:"◐", fields:[
-    {id:"protDataAval",label:"Data da avaliação",type:"date"},
-    {id:"protSessoes",label:"Número de sessões de testagem",type:"number"},
-  ]},
-  { id:"testes", title:"Testes Aplicados", icon:"📊",
-    checksTestes:[
-      "WISC-V / WAIS-IV","NEUPSILIN","NEUPSILIN-I","BPA (Bateria de Provas de Atenção)","CPM/SPM/APM (Raven)","WCST","Trail Making Test (TMT)","Wisconsin","Rey-AVLT","Figura Complexa de Rey","Teste de Nomeação de Boston","RAVLT","IGT (Jogo de Iowa)","Fluência Verbal","Stroop","FDT","Teste de Memória de Trabalho","TEA (Transtorno do Espectro Autista) – ADI-R / ADOS-2","Bender","HTP / Desenhos","TAT / CAT","Rorschach","ISSL","BDI / BDI-II","BAI","SNAP-IV","CONNERS","Escala de Conners (pais/professores)","CBCL","Escala Vineland",
-    ],
-    fields:[
-      {id:"protOutros",label:"Outros instrumentos utilizados",type:"textarea"},
-      {id:"protJustificativa",label:"Justificativa da seleção de instrumentos",type:"textarea"},
-      {id:"protCondicoes",label:"Condições de aplicação",type:"textarea"},
-      {id:"protComport",label:"Comportamento durante testagem",type:"textarea"},
-    ]
-  },
-]};
-
-// ── PLANILHA DE CORREÇÃO ─────────────────────────────────────────
-DOC_DEFS.planilha = { sections:[
-  { id:"dados", title:"Planilha de Escores", icon:"◑", fields:[
-    {id:"planDataCorr",label:"Data da correção",type:"date"},
-    {id:"planCorrigidoPor",label:"Corrigido por",type:"text"},
-  ]},
-  { id:"escores", title:"Resultados por Instrumento", icon:"📊", fields:[
-    {id:"planWisc",label:"WISC-V / WAIS-IV – QI Total e índices",type:"textarea"},
-    {id:"planAtencao",label:"Atenção (BPA/CPT/FDT) – percentis",type:"textarea"},
-    {id:"planMemoria",label:"Memória (RAVLT/Rey/NEUPSILIN) – escores",type:"textarea"},
-    {id:"planFunExec",label:"Funções Executivas (TMT/WCST/Fluência) – resultados",type:"textarea"},
-    {id:"planLinguagem",label:"Linguagem e nomeação",type:"textarea"},
-    {id:"planProjetivos",label:"Instrumentos projetivos – síntese",type:"textarea"},
-    {id:"planPersonalidade",label:"Personalidade / rastreamento emocional",type:"textarea"},
-    {id:"planOutrosEsc",label:"Outros escores relevantes",type:"textarea"},
-    {id:"planConclusaoEsc",label:"Síntese dos resultados",type:"textarea"},
-  ]},
-]};
-
-// ── CHECKLIST DE DOCUMENTOS ──────────────────────────────────────
-DOC_DEFS.checklist = { sections:[
-  { id:"docs", title:"Checklist de Documentos", icon:"✅",
-    checksDocs:[
-      {label:"Anamnese preenchida",id:"ckAnamnese"},
-      {label:"TCLE assinado",id:"ckTcle"},
-      {label:"Contrato assinado",id:"ckContrato"},
-      {label:"Heteroanamnese (se aplicável)",id:"ckHetero"},
-      {label:"Autorização p/ terceiros",id:"ckAutorizacao"},
-      {label:"Termo para menor (se aplicável)",id:"ckTermoMenor"},
-      {label:"Fichas de observação clínica",id:"ckObsClinica"},
-      {label:"Evoluções de sessão",id:"ckEvolucoes"},
-      {label:"Prontuário atualizado",id:"ckProntuario"},
-      {label:"Protocolos de testes aplicados",id:"ckProtocolos"},
-      {label:"Planilha de correção preenchida",id:"ckPlanilha"},
-      {label:"Laudo / relatório emitido",id:"ckLaudo"},
-      {label:"Registro de devolutiva",id:"ckDevolutiva"},
-      {label:"Documentos externos recebidos",id:"ckDocExt"},
-    ],
-    fields:[
-      {id:"ckDocExtDesc",label:"Documentos externos recebidos (descrever)",type:"textarea"},
-      {id:"ckObs",label:"Observações sobre pendências",type:"textarea"},
-    ]
-  },
-]};
-
-// ── LAUDO ────────────────────────────────────────────────────────
-DOC_DEFS.laudo = { sections:[
-  { id:"dados", title:"Dados do Laudo", icon:"📊", fields:[
-    {id:"ldDataLaudo",label:"Data do laudo",type:"date"},
-    {id:"ldFinalidade",label:"Finalidade do laudo",type:"textarea"},
-    {id:"ldDestinatario",label:"Destinatário (se aplicável)",type:"text"},
-  ]},
-  { id:"metodo", title:"Método", icon:"🔬", fields:[
-    {id:"ldPeriodoAval",label:"Período de avaliação",type:"text"},
-    {id:"ldNSessoes",label:"Número de sessões",type:"number"},
-    {id:"ldInstrumentos",label:"Instrumentos utilizados",type:"textarea"},
-    {id:"ldFontesInfo",label:"Fontes de informação",type:"textarea"},
-  ]},
-  { id:"resultados", title:"Resultados", icon:"📈", fields:[
-    {id:"ldHistClinico",label:"Histórico clínico e queixa",type:"textarea"},
-    {id:"ldResultados",label:"Resultados e análise dos instrumentos",type:"textarea"},
-    {id:"ldComport",label:"Aspectos comportamentais observados",type:"textarea"},
-  ]},
-  { id:"conclusao", title:"Conclusão", icon:"📋", fields:[
-    {id:"ldConclusao",label:"Conclusão / síntese diagnóstica",type:"textarea"},
-    {id:"ldCid",label:"CID-11 / DSM-5 (se aplicável)",type:"text"},
-    {id:"ldRecomendacoes",label:"Recomendações",type:"textarea"},
-    {id:"ldEncaminhamentos",label:"Encaminhamentos",type:"textarea"},
-  ]},
-]};
-
-// ── RELATÓRIO ────────────────────────────────────────────────────
-DOC_DEFS.relatorio = { sections:[
-  { id:"dados", title:"Dados do Relatório", icon:"📃", fields:[
-    {id:"relData",label:"Data",type:"date"},
-    {id:"relTipo",label:"Tipo de relatório",type:"select",options:["","Relatório de Progresso","Relatório para Escola","Relatório Médico","Relatório para Jurídico","Relatório para INSS","Outro"]},
-    {id:"relDestinatario",label:"Destinatário",type:"text"},
-    {id:"relFinalidade",label:"Finalidade",type:"textarea"},
-  ]},
-  { id:"corpo", title:"Corpo do Relatório", icon:"📝", fields:[
-    {id:"relIntroducao",label:"Introdução / apresentação do caso",type:"textarea"},
-    {id:"relDesenvolvimento",label:"Desenvolvimento (achados, evolução, intervenções)",type:"textarea"},
-    {id:"relResultados",label:"Resultados obtidos",type:"textarea"},
-    {id:"relConclusao",label:"Conclusão e recomendações",type:"textarea"},
-  ]},
-]};
-
-// ── PARECER ──────────────────────────────────────────────────────
-DOC_DEFS.parecer = { sections:[
-  { id:"dados", title:"Dados do Parecer", icon:"⚖️", fields:[
-    {id:"parData",label:"Data",type:"date"},
-    {id:"parSolicitante",label:"Solicitante do parecer",type:"text"},
-    {id:"parFinalidade",label:"Finalidade",type:"textarea"},
-    {id:"parQuestao",label:"Questão/demanda apresentada",type:"textarea"},
-  ]},
-  { id:"corpo", title:"Corpo do Parecer", icon:"📝", fields:[
-    {id:"parAnalise",label:"Análise técnica",type:"textarea"},
-    {id:"parFundamentos",label:"Fundamentação técnica e científica",type:"textarea"},
-    {id:"parConclusao",label:"Conclusão / posicionamento técnico",type:"textarea"},
-    {id:"parRessalvas",label:"Ressalvas (se houver)",type:"textarea"},
-  ]},
-]};
-
-// ── DECLARAÇÃO ───────────────────────────────────────────────────
-DOC_DEFS.declaracao = { sections:[
-  { id:"dados", title:"Dados da Declaração", icon:"📜", fields:[
-    {id:"declData",label:"Data",type:"date"},
-    {id:"declTipo",label:"Tipo",type:"select",options:["","Declaração de Comparecimento","Declaração de Acompanhamento","Declaração para Plano de Saúde","Declaração para Escola","Declaração para Empresa","Outro"]},
-    {id:"declDestinatario",label:"Destinatário / Interessado",type:"text"},
-    {id:"declFinalidade",label:"Finalidade da declaração",type:"textarea"},
-    {id:"declConteudo",label:"Conteúdo da declaração",type:"textarea"},
-    {id:"declPeriodo",label:"Período de acompanhamento",type:"text"},
-    {id:"declObs",label:"Observações",type:"textarea"},
-  ]},
-]};
-
-// ═══════════════════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════════════════
-let formData = {};
-let currentDoc = "anamnese";
-let currentSec = 0;
-let deferredInstall = null;
-
-function initData() {
-  formData = {};
-  Object.keys(DOC_DEFS).forEach(docId => {
-    const def = DOC_DEFS[docId];
-    def.sections.forEach(sec => {
-      if (sec.fields) sec.fields.forEach(f => { if (!formData[f.id]) formData[f.id] = ""; });
-      if (sec.tocFields) sec.tocFields.forEach(f => { if (!formData[f.id]) formData[f.id] = ""; });
-      if (sec.subsections) sec.subsections.forEach(sub => sub.checks.forEach(c => { const k=sub.prefix+"_"+c; if (!formData[k]) formData[k]=false; }));
-      if (sec.checks2) sec.checks2.forEach(grp => grp.items.forEach(c => { const k=grp.prefix+"_"+c; if (!formData[k]) formData[k]=false; }));
-      if (sec.checksTestes) sec.checksTestes.forEach(c => { const k="teste_"+c; if (!formData[k]) formData[k]=false; });
-      if (sec.checksDocs) sec.checksDocs.forEach(c => { if (!formData[c.id]) formData[c.id]=false; });
-    });
+    ...opts
   });
+  if (!res.ok) { const e = await res.json(); throw new Error(e.message || "Erro"); }
+  return res.status === 204 ? null : res.json();
 }
 
-// ═══════════════════════════════════════════════════════════════
-// RENDER SIDEBAR
-// ═══════════════════════════════════════════════════════════════
-function renderSidebar() {
-  const groups = {};
-  DOCS.forEach(d => { if (!groups[d.group]) groups[d.group]=[]; groups[d.group].push(d); });
-  let html = "";
-  Object.keys(groups).forEach(g => {
-    html += `<div class="tabs-group-label">${g}</div>`;
-    groups[g].forEach(d => {
-      html += `<button class="tab-btn ${d.id===currentDoc?'active':''}" onclick="switchDoc('${d.id}')">
-        <span class="tab-icon">${d.icon}</span>${d.label}</button>`;
-    });
+async function sbAuth(action, body) {
+  const res = await fetch(`${SB_URL}/auth/v1/${action}`, {
+    method: "POST",
+    headers: { "apikey": SB_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify(body)
   });
-  document.getElementById("docTabs").innerHTML = html;
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error_description || data.msg || "Erro de autenticação");
+  return data;
 }
 
-// ═══════════════════════════════════════════════════════════════
-// RENDER SECTION TABS
-// ═══════════════════════════════════════════════════════════════
-function renderSecTabs() {
-  const def = DOC_DEFS[currentDoc];
-  const html = def.sections.map((s,i) =>
-    `<button class="sec-tab ${i===currentSec?'active':''}" onclick="switchSec(${i})">${s.title}</button>`
-  ).join("");
-  document.getElementById("secTabs").innerHTML = html;
+// ── AUTH ──
+async function doLogin() {
+  const email = document.getElementById("loginEmail").value.trim();
+  const pass = document.getElementById("loginPass").value;
+  const err = document.getElementById("loginErr");
+  err.textContent = "";
+  try {
+    const data = await sbAuth("token?grant_type=password", { email, password: pass });
+    currentUser = { email, token: data.access_token, nome: data.user?.user_metadata?.nome || email };
+    localStorage.setItem("clinica_session", JSON.stringify(currentUser));
+    localStorage.setItem("saved_email", email);
+    showScreen("appScreen");
+    initApp();
+    setTimeout(() => logAudit("login", "login", `Login realizado por ${currentUser.nome || email}`), 500);
+  } catch(e) { err.textContent = "E-mail ou senha inválidos."; }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// RENDER CONTENT
-// ═══════════════════════════════════════════════════════════════
-function renderContent() {
-  const def = DOC_DEFS[currentDoc];
-  const sec = def.sections[currentSec];
-  let html = "";
+async function doRegister() {
+  const nome = document.getElementById("regNome").value.trim();
+  const email = document.getElementById("regEmail").value.trim();
+  const pass = document.getElementById("regPass").value;
+  const perfil = document.getElementById("regPerfil").value;
+  const err = document.getElementById("regErr");
+  err.textContent = "";
+  if (!nome || !email || !pass) { err.textContent = "Preencha todos os campos."; return; }
+  try {
+    await sbAuth("signup", { email, password: pass, data: { nome, perfil } });
+    showToast("Conta criada! Verifique seu e-mail.", "success");
+    showScreen("loginScreen");
+  } catch(e) { err.textContent = e.message; }
+}
 
-  // iOS install
-  const isIOS = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase()) && !window.navigator.standalone;
-  if (isIOS && !sessionStorage.getItem("instDismiss")) {
-    html += `<div class="install-banner"><div class="inst-txt"><strong>📱 Instalar no iPhone</strong>Compartilhar → "Adicionar à Tela de Início"</div><button class="inst-x" onclick="dismissInst()">✕</button></div>`;
-  }
-  if (deferredInstall && !sessionStorage.getItem("instDismiss")) {
-    html += `<div class="install-banner"><div class="inst-txt"><strong>📱 Instalar como app</strong>Use offline, direto da tela inicial</div><button class="inst-btn" onclick="triggerInst()">Instalar</button><button class="inst-x" onclick="dismissInst()">✕</button></div>`;
-  }
+function doLogout() {
+  currentUser = null;
+  localStorage.removeItem("clinica_session");
+  showScreen("loginScreen");
+}
 
-  // Mobile selects
-  const docOptions = DOCS.map((d,i) => `<option value="${d.id}" ${d.id===currentDoc?"selected":""}>${d.icon} ${d.label}</option>`).join("");
-  const secOptions = def.sections.map((s,i) => `<option value="${i}" ${i===currentSec?"selected":""}>${s.title}</option>`).join("");
-  html += `<div class="mob-selects">
-    <select class="mob-sel" onchange="switchDoc(this.value)">${docOptions}</select>
-    <select class="mob-sel" onchange="switchSec(parseInt(this.value))">${secOptions}</select>
+// ── SCREENS & VIEWS ──
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+function showView(id) {
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+  document.getElementById("view-" + id).classList.add("active");
+  document.querySelectorAll(".nav-item,.mob-nav-item").forEach(n => n.classList.remove("active"));
+  const navEl = document.getElementById("nav-" + id);
+  const mnavEl = document.getElementById("mnav-" + id);
+  if (navEl) navEl.classList.add("active");
+  if (mnavEl) mnavEl.classList.add("active");
+  if (id === "pacientes") loadPacientes();
+  if (id === "agenda") loadAgenda();
+  if (id === "programacao") loadProgramacoes();
+  if (id === "usuarios") loadUsuarios();
+  if (id === "dashboard") loadDashboard();
+  if (id === "auditoria") { const today = new Date().toISOString().split("T")[0]; document.getElementById("auditAte").value = today; const m = new Date(); m.setDate(1); document.getElementById("auditDe").value = m.toISOString().split("T")[0]; loadAuditoria(); }
+}
+
+// ── INIT ──
+function initApp() {
+  const today = new Date();
+  document.getElementById("dashWelcome").textContent = `Bem-vinda, ${currentUser.nome.split(" ")[0]}!`;
+  document.getElementById("dashDate").textContent = today.toLocaleDateString("pt-BR", { weekday:"long", day:"numeric", month:"long", year:"numeric" });
+  document.getElementById("topbarUser").textContent = currentUser.nome;
+  loadDashboard();
+}
+
+// ── DASHBOARD ──
+async function loadDashboard() {
+  try {
+    const pacs = await sbFetch("pacientes?select=*&order=created_at.desc");
+    pacientes = pacs || [];
+    const total = pacientes.length;
+    const ativos = pacientes.filter(p => p.status === "ativo").length;
+    const concluidos = pacientes.filter(p => p.status === "concluido").length;
+    const hoje = new Date().toISOString().split("T")[0];
+    const agend = await sbFetch(`agendamentos?data=eq.${hoje}&select=*`);
+    document.getElementById("statTotal").textContent = total;
+    document.getElementById("statAtivos").textContent = ativos;
+    document.getElementById("statConcluidos").textContent = concluidos;
+    document.getElementById("statHoje").textContent = (agend || []).length;
+    const recent = pacientes.slice(0, 5);
+    const list = document.getElementById("recentList");
+    if (!recent.length) { list.innerHTML = `<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">Nenhum paciente cadastrado ainda</div></div>`; return; }
+    list.innerHTML = recent.map(p => `
+      <div class="recent-item" onclick="abrirPaciente('${p.id}')">
+        <div><div class="recent-name">${p.nome}</div><div class="recent-info">${p.tipo_atendimento || "—"} · ${p.telefone || "—"}</div></div>
+        <span class="recent-status status-${p.status || 'aguardando'}">${labelStatus(p.status)}</span>
+      </div>`).join("");
+  } catch(e) { console.error(e); }
+}
+
+// ── PACIENTES ──
+async function loadPacientes() {
+  const list = document.getElementById("pacList");
+  list.innerHTML = `<div class="loading"><div class="spinner"></div></div>`;
+  try {
+    pacientes = await sbFetch("pacientes?select=*&order=nome.asc") || [];
+    renderPacientes(pacientes);
+  } catch(e) { list.innerHTML = `<div class="empty-state"><div class="empty-text">Erro ao carregar. Verifique a conexão.</div></div>`; }
+}
+
+function renderPacientes(list) {
+  const el = document.getElementById("pacList");
+  if (!list.length) { el.innerHTML = `<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">Nenhum paciente encontrado</div></div>`; return; }
+  el.innerHTML = list.map(p => `
+    <div class="pac-card">
+      <div onclick="abrirPaciente('${p.id}')" style="flex:1;cursor:pointer">
+        <div class="pac-name">${p.nome}</div>
+        <div class="pac-info">${p.tipo_atendimento || "—"} · ${p.telefone || "—"} · <span class="recent-status status-${p.status || 'aguardando'}">${labelStatus(p.status)}</span></div>
+      </div>
+      <div class="pac-actions">
+        <button class="btn-icon" onclick="abrirPaciente('${p.id}')">📋</button>
+        <button class="btn-icon" onclick="excluirPaciente('${p.id}','${p.nome}')">🗑️</button>
+      </div>
+    </div>`).join("");
+}
+
+function filterPacientes(q) {
+  const filtered = pacientes.filter(p => p.nome.toLowerCase().includes(q.toLowerCase()));
+  renderPacientes(filtered);
+}
+
+async function salvarPaciente() {
+  const nome = document.getElementById("pacNome").value.trim();
+  if (!nome) { showToast("Nome é obrigatório!", "error"); return; }
+  const data = {
+    nome, data_nascimento: document.getElementById("pacNasc").value || null,
+    telefone: document.getElementById("pacTel").value,
+    email: document.getElementById("pacEmail").value,
+    sexo: document.getElementById("pacSexo").value,
+    status: document.getElementById("pacStatus").value,
+    tipo_atendimento: document.getElementById("pacTipo").value,
+    encaminhamento: document.getElementById("pacEncam").value,
+    observacoes: document.getElementById("pacObs").value,
+  };
+  try {
+    await sbFetch("pacientes", { method: "POST", body: JSON.stringify(data) });
+    closeModal("novoPacModal");
+    showToast("Paciente cadastrado!", "success");
+    logAudit("criar", "pacientes", `Paciente cadastrado: ${nome}`);
+    loadPacientes(); loadDashboard();
+    document.getElementById("pacNome").value = "";
+  } catch(e) { showToast("Erro ao salvar: " + e.message, "error"); }
+}
+
+async function excluirPaciente(id, nome) {
+  if (!confirm(`Excluir paciente "${nome}"? Esta ação não pode ser desfeita.`)) return;
+  try {
+    await sbFetch(`pacientes?id=eq.${id}`, { method: "DELETE", prefer: "" });
+    showToast("Paciente excluído.", "success");
+    logAudit("excluir", "pacientes", `Paciente excluído: ${nome}`);
+    loadPacientes(); loadDashboard();
+  } catch(e) { showToast("Erro ao excluir.", "error"); }
+}
+
+function abrirPaciente(id) {
+  currentPaciente = pacientes.find(p => p.id === id);
+  if (!currentPaciente) return;
+  document.getElementById("detalheName").textContent = currentPaciente.nome;
+  showView("paciente-detalhe");
+  showPacTab("info");
+}
+
+function showPacTab(tab) {
+  document.querySelectorAll(".pac-tab").forEach(t => t.classList.remove("active"));
+  const tabs = document.querySelectorAll(".pac-tab");
+  const tabMap = ["info","docs","prog","historico","financeiro"];
+  const idx = tabMap.indexOf(tab);
+  if (tabs[idx]) tabs[idx].classList.add("active");
+  const c = document.getElementById("pacTabContent");
+  const p = currentPaciente;
+  if (tab === "info") {
+    c.innerHTML = `
+      <div style="margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap">
+        <span class="recent-status status-${p.status}">${labelStatus(p.status)}</span>
+        <span style="font-size:10px;color:var(--text3)">${p.tipo_atendimento || "—"}</span>
+      </div>
+      ${infoRow("Nome",p.nome)}${infoRow("Data de nascimento",formatDate(p.data_nascimento))}
+      ${infoRow("Telefone",p.telefone)}${infoRow("E-mail",p.email)}
+      ${infoRow("Sexo",p.sexo)}${infoRow("Encaminhamento",p.encaminhamento)}
+      ${infoRow("Observações",p.observacoes)}
+      <div style="margin-top:20px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-primary" onclick="openModal('novoAgendModal')">+ Agendar Sessão</button>
+        <button class="btn-secondary" onclick="openModal('progModal')">+ Programação</button>
+      </div>`;
+  } else if (tab === "docs") {
+    c.innerHTML = `<div class="docs-grid">
+      <button class="doc-btn" onclick="exportarDocPaciente('anamnese')"><div class="doc-btn-icon">◈</div><div class="doc-btn-label">Anamnese</div></button>
+      <button class="doc-btn" onclick="exportarDocPaciente('tcle')"><div class="doc-btn-icon">📋</div><div class="doc-btn-label">TCLE</div></button>
+      <button class="doc-btn" onclick="exportarDocPaciente('contrato')"><div class="doc-btn-icon">📄</div><div class="doc-btn-label">Contrato</div></button>
+      <button class="doc-btn" onclick="exportarDocPaciente('laudo')"><div class="doc-btn-icon">📊</div><div class="doc-btn-label">Laudo</div></button>
+      <button class="doc-btn" onclick="exportarDocPaciente('relatorio')"><div class="doc-btn-icon">📃</div><div class="doc-btn-label">Relatório</div></button>
+      <button class="doc-btn" onclick="exportarDocPaciente('evolucao')"><div class="doc-btn-icon">📝</div><div class="doc-btn-label">Evolução</div></button>
+      <button class="doc-btn" onclick="exportarDocPaciente('declaracao')"><div class="doc-btn-icon">📜</div><div class="doc-btn-label">Declaração</div></button>
+      <button class="doc-btn" onclick="exportarDocPaciente('programacao')"><div class="doc-btn-icon">📅</div><div class="doc-btn-label">Programação</div></button>
+    </div>`;
+  } else if (tab === "historico") {
+    loadHistorico(c, p.id);
+  } else if (tab === "financeiro") {
+    c.innerHTML = `
+      <div class="prog-card">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:12px">Informações financeiras do paciente</div>
+        ${infoRow("Tipo de atendimento", p.tipo_atendimento)}
+        ${infoRow("Status", labelStatus(p.status))}
+      </div>`;
+  } else if (tab === "prog") {
+    loadProgPaciente(c, p.id);
+  }
+}
+
+async function loadHistorico(c, pacId) {
+  c.innerHTML = `<div class="loading"><div class="spinner"></div></div>`;
+  try {
+    const ag = await sbFetch(`agendamentos?paciente_id=eq.${pacId}&select=*&order=data.desc`) || [];
+    if (!ag.length) { c.innerHTML = `<div class="empty-state"><div class="empty-icon">📅</div><div class="empty-text">Nenhuma sessão registrada</div></div>`; return; }
+    c.innerHTML = ag.map(a => `
+      <div class="agenda-item">
+        <div class="agenda-date-box"><div class="agenda-day">${new Date(a.data + "T12:00:00").getDate()}</div><div class="agenda-month">${new Date(a.data + "T12:00:00").toLocaleString("pt-BR",{month:"short"})}</div></div>
+        <div class="agenda-info"><div class="agenda-pac">${a.tipo_sessao}</div><div class="agenda-hora">⏰ ${a.horario} · ${a.modalidade}</div><div class="agenda-tipo">${a.observacoes||""}</div></div>
+      </div>`).join("");
+  } catch(e) { c.innerHTML = `<div class="empty-state"><div class="empty-text">Erro ao carregar histórico</div></div>`; }
+}
+
+async function loadProgPaciente(c, pacId) {
+  c.innerHTML = `<div class="loading"><div class="spinner"></div></div>`;
+  try {
+    const progs = await sbFetch(`programacoes?paciente_id=eq.${pacId}&select=*&order=created_at.desc`) || [];
+    if (!progs.length) { c.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">Nenhuma programação gerada<br><br><button class="btn-primary" onclick="openModal('progModal')">+ Criar Programação</button></div></div>`; return; }
+    c.innerHTML = progs.map(pr => renderProgCard(pr)).join("");
+  } catch(e) { c.innerHTML = `<div class="empty-state"><div class="empty-text">Erro ao carregar</div></div>`; }
+}
+
+// ── AGENDA ──
+async function loadAgenda() {
+  const list = document.getElementById("agendaList");
+  list.innerHTML = `<div class="loading"><div class="spinner"></div></div>`;
+  try {
+    const ag = await sbFetch("agendamentos?select=*,pacientes(nome)&order=data.asc,horario.asc") || [];
+    agendamentos = ag;
+    if (!ag.length) { list.innerHTML = `<div class="empty-state"><div class="empty-icon">📅</div><div class="empty-text">Nenhum agendamento</div></div>`; return; }
+    list.innerHTML = ag.map(a => `
+      <div class="agenda-item">
+        <div class="agenda-date-box">
+          <div class="agenda-day">${new Date(a.data + "T12:00:00").getDate()}</div>
+          <div class="agenda-month">${new Date(a.data + "T12:00:00").toLocaleString("pt-BR",{month:"short"})}</div>
+        </div>
+        <div class="agenda-info">
+          <div class="agenda-pac">${a.pacientes?.nome || "—"}</div>
+          <div class="agenda-hora">⏰ ${a.horario} · ${a.modalidade}</div>
+          <div class="agenda-tipo">${a.tipo_sessao}</div>
+        </div>
+      </div>`).join("");
+  } catch(e) { list.innerHTML = `<div class="empty-state"><div class="empty-text">Erro ao carregar agenda</div></div>`; }
+}
+
+async function salvarAgendamento() {
+  const pacId = document.getElementById("agendPac").value;
+  const data = document.getElementById("agendData").value;
+  const hora = document.getElementById("agendHora").value;
+  if (!pacId || !data || !hora) { showToast("Preencha paciente, data e horário!", "error"); return; }
+  try {
+    await sbFetch("agendamentos", { method:"POST", body: JSON.stringify({
+      paciente_id: pacId, data, horario: hora,
+      tipo_sessao: document.getElementById("agendTipo").value,
+      modalidade: document.getElementById("agendModal").value,
+      observacoes: document.getElementById("agendObs").value,
+    })});
+    closeModal("novoAgendModal");
+    showToast("Agendamento salvo!", "success");
+    logAudit("criar", "agenda", `Agendamento criado para ${data} às ${hora}`);
+    loadAgenda();
+  } catch(e) { showToast("Erro ao agendar: " + e.message, "error"); }
+}
+
+// ── PROGRAMAÇÃO ──
+async function loadProgramacoes() {
+  const el = document.getElementById("progList");
+  el.innerHTML = `<div class="loading"><div class="spinner"></div></div>`;
+  try {
+    const progs = await sbFetch("programacoes?select=*,pacientes(nome)&order=created_at.desc") || [];
+    if (!progs.length) { el.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">Nenhuma programação criada</div></div>`; return; }
+    el.innerHTML = progs.map(pr => renderProgCard(pr, pr.pacientes?.nome)).join("");
+  } catch(e) { el.innerHTML = `<div class="empty-state"><div class="empty-text">Erro ao carregar</div></div>`; }
+}
+
+function renderProgCard(pr, pacNome) {
+  const sessoes = JSON.parse(pr.sessoes || "[]");
+  return `<div class="prog-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div>
+        <div style="font-family:'Crimson Pro',serif;font-size:16px;color:var(--gold)">${pacNome || pr.paciente_nome || "Paciente"}</div>
+        <div style="font-size:10px;color:var(--text3)">Horário: ${pr.horario_fixo} · ${pr.valor_total ? "R$ " + pr.valor_total : ""}</div>
+      </div>
+      <button class="btn-secondary" onclick="exportarProgramacao(${JSON.stringify(pr).replace(/"/g,'&quot;')})">⬇ PDF</button>
+    </div>
+    ${sessoes.map(s => `
+      <div class="prog-session">
+        <div class="prog-num ${s.skip ? 'skip' : ''}">${s.skip ? '—' : s.num}</div>
+        <div><div class="prog-date">${s.data} ${s.dia ? '('+s.dia+')' : ''}</div><div class="prog-desc">${s.descricao}</div></div>
+      </div>`).join("")}
   </div>`;
+}
 
-  // Card
-  html += `<div class="card">
-    <div class="card-head">
-      <span class="card-icon">${sec.icon||"📋"}</span>
-      <div><div class="card-title">${sec.title}</div>${sec.subtitle?`<div class="card-sub">${sec.subtitle}</div>`:""}</div>
-    </div>
-    <div class="card-body">`;
+async function salvarProgramacao() {
+  const pacId = document.getElementById("progPac").value;
+  if (!pacId) { showToast("Selecione um paciente!", "error"); return; }
+  const dataInicio = document.getElementById("progDataInicio").value;
+  if (!dataInicio) { showToast("Selecione a data de início!", "error"); return; }
+  const hora = document.getElementById("progHora").value;
+  const diaSem = parseInt(document.getElementById("progDia").value);
+  const nSessoes = parseInt(document.getElementById("progNSessoes").value);
+  const valor = document.getElementById("progValor").value;
+  const descPix = parseFloat(document.getElementById("progDescPix").value) || 5;
+  const parcelas = document.getElementById("progParcelas").value;
+  const obs = document.getElementById("progObs").value;
 
-  // Regular fields
-  if (sec.fields) sec.fields.forEach(f => { html += renderFieldBlock(f); });
+  const diasNomes = ["","segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado","domingo"];
+  const descricoesPadrao = [
+    "Entrevista clínica inicial / anamnese detalhada",
+    "Início da avaliação cognitiva/neuropsicológica",
+    "Continuidade da avaliação",
+    "Aplicação de instrumentos complementares",
+    "Avaliação de funções executivas / atenção / memória",
+    "Avaliação emocional / personalidade / rastreios clínicos",
+    "Continuidade da investigação diagnóstica",
+    "Finalização das aplicações",
+    "Entrevista complementar / fechamento técnico da avaliação",
+    "Sessão de devolutiva clínica + entrega e explicação do laudo psicológico",
+  ];
 
-  // Subsections (anamnese queixas)
-  if (sec.subsections) {
-    sec.subsections.forEach(sub => {
-      html += `<div class="sub-block"><div class="sub-title">${sub.title}</div><div class="checks-grid">`;
-      sub.checks.forEach(c => {
-        const k = sub.prefix+"_"+c;
-        html += `<div class="chk-opt" onclick="toggleChk('${esc(k)}')"><div class="chk-box ${formData[k]?'on':''}" id="cb_${safeId(k)}"></div><span class="chk-lbl">${c}</span></div>`;
-      });
-      html += `</div></div>`;
-    });
-    if (sec.tocFields) {
-      html += `<div class="sub-block"><div class="sub-title">TOC</div>`;
-      sec.tocFields.forEach(f => { html += renderFieldBlock(f); });
-      html += `</div>`;
-    }
+  // Gerar sessões
+  const sessoes = [];
+  let d = new Date(dataInicio + "T12:00:00");
+  let sessaoNum = 1;
+  let semanas = 0;
+
+  while (sessaoNum <= nSessoes && semanas < 52) {
+    const dataStr = d.toLocaleDateString("pt-BR");
+    sessoes.push({ num: sessaoNum, data: dataStr, dia: diasNomes[diaSem], descricao: descricoesPadrao[sessaoNum - 1] || `Sessão ${sessaoNum}`, skip: false });
+    sessaoNum++;
+    d.setDate(d.getDate() + 7);
+    semanas++;
   }
 
-  // checks2 (obs clínica)
-  if (sec.checks2) {
-    sec.checks2.forEach(grp => {
-      html += `<div class="sub-block"><div class="sub-title">${grp.group}</div><div class="checks-grid">`;
-      grp.items.forEach(c => {
-        const k = grp.prefix+"_"+c;
-        html += `<div class="chk-opt" onclick="toggleChk('${esc(k)}')"><div class="chk-box ${formData[k]?'on':''}" id="cb_${safeId(k)}"></div><span class="chk-lbl">${c}</span></div>`;
-      });
-      html += `</div></div>`;
-    });
-  }
+  const valorNum = parseFloat(valor.replace(",",".")) || 0;
+  const valorPix = valorNum * (1 - descPix/100);
 
-  // checksTestes
-  if (sec.checksTestes) {
-    html += `<div class="sub-block"><div class="sub-title">Selecione os instrumentos aplicados</div><div class="checks-grid">`;
-    sec.checksTestes.forEach(c => {
-      const k = "teste_"+c;
-      html += `<div class="chk-opt" onclick="toggleChk('${esc(k)}')"><div class="chk-box ${formData[k]?'on':''}" id="cb_${safeId(k)}"></div><span class="chk-lbl">${c}</span></div>`;
-    });
-    html += `</div></div>`;
-  }
+  const progData = {
+    paciente_id: pacId,
+    paciente_nome: pacientes.find(p => p.id === pacId)?.nome || "",
+    horario_fixo: hora,
+    dia_semana: diasNomes[diaSem],
+    valor_total: valor,
+    valor_pix: valorPix.toFixed(2),
+    desconto_pix: descPix,
+    parcelas_cartao: parcelas,
+    observacoes: obs,
+    sessoes: JSON.stringify(sessoes),
+  };
 
-  // checksDocs (checklist)
-  if (sec.checksDocs) {
-    html += `<div class="sub-block"><div class="sub-title">Documentos</div>`;
-    sec.checksDocs.forEach(c => {
-      html += `<div class="chk-opt" style="margin-bottom:8px" onclick="toggleChk('${c.id}')"><div class="chk-box ${formData[c.id]?'on':''}" id="cb_${c.id}"></div><span class="chk-lbl" style="font-size:12px">${c.label}</span></div>`;
-    });
-    html += `</div>`;
-    if (sec.fields) sec.fields.forEach(f => { html += renderFieldBlock(f); });
-  }
-
-  // Nav
-  html += `</div>
-    <div class="snav">
-      <button class="snav-btn snav-prev" onclick="switchSec(${currentSec-1})" ${currentSec===0?"disabled":""}>← Ant.</button>
-      <span class="snav-cnt">${currentSec+1}/${def.sections.length}</span>
-      <button class="snav-btn snav-next" onclick="switchSec(${currentSec+1})" ${currentSec===def.sections.length-1?"disabled":""}>Próx. →</button>
-    </div>
-  </div>`;
-
-  // Export panel
-  html += `<div class="exp-panel">
-    <div class="exp-title">Exportar documento atual</div>
-    <div class="exp-btns">
-      <button class="exp-btn exp-pdf" onclick="exportPDF()">⬇ PDF</button>
-      <button class="exp-btn exp-word" onclick="exportWord()">⬇ Word (.doc)</button>
-    </div>
-    <div class="exp-hint">
-      <strong>PDF:</strong> abre aba de impressão → Salvar como PDF<br>
-      <strong>Word:</strong> baixa .doc → Word ou Google Docs
-    </div>
-  </div>`;
-
-  document.getElementById("contentInner").innerHTML = html;
-
-  // Bind inputs
-  document.querySelectorAll(".finput,.ftextarea,.fselect").forEach(el => {
-    el.addEventListener("input", () => { formData[el.dataset.id] = el.value; updateProg(); });
-  });
-
-  updateProg();
-  document.querySelector(".content").scrollTo(0,0);
+  try {
+    await sbFetch("programacoes", { method:"POST", body: JSON.stringify(progData) });
+    closeModal("progModal");
+    showToast("Programação criada!", "success");
+    loadProgramacoes();
+  } catch(e) { showToast("Erro: " + e.message, "error"); }
 }
 
-function renderFieldBlock(f) {
-  const v = (formData[f.id]||"").toString().replace(/"/g,"&quot;");
-  let input = "";
-  if (f.type==="textarea") input = `<textarea class="ftextarea" data-id="${f.id}" placeholder="—">${formData[f.id]||""}</textarea>`;
-  else if (f.type==="select") input = `<select class="fselect" data-id="${f.id}">${f.options.map(o=>`<option value="${o}" ${formData[f.id]===o?"selected":""}>${o||"Selecione..."}</option>`).join("")}</select>`;
-  else if (f.type==="radio") input = `<div class="radio-grp">${f.options.map(o=>`<div class="radio-opt" onclick="setRadio('${f.id}','${o}')"><div class="radio-dot ${formData[f.id]===o?'on':''}" id="rd_${safeId(f.id)}_${safeId(o)}"></div><span class="radio-lbl">${o}</span></div>`).join("")}</div>`;
-  else input = `<input class="finput" type="${f.type}" data-id="${f.id}" value="${v}" placeholder="—"/>`;
-  return `<div class="fg"><div class="flabel">${f.label}</div>${input}</div>`;
+// ── USUÁRIOS ──
+async function loadUsuarios() {
+  // Apenas mostra info básica — gestão real requer service_role
+  document.getElementById("usersList").innerHTML = `
+    <div class="prog-card">
+      <div style="font-family:'Crimson Pro',serif;font-size:16px;color:var(--gold);margin-bottom:12px">Usuários do Sistema</div>
+      ${infoRow("Usuário atual", currentUser?.nome || currentUser?.email)}
+      ${infoRow("E-mail", currentUser?.email)}
+      <div style="margin-top:16px;padding:12px;background:var(--bg);border-radius:4px;border:1px solid var(--border)">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:6px">Para adicionar novos usuários:</div>
+        <div style="font-size:11px;color:var(--text2)">Peça para a pessoa acessar o link do sistema e criar uma conta própria na tela de login.</div>
+      </div>
+    </div>`;
 }
 
-// ═══════════════════════════════════════════════════════════════
-// INTERACTION
-// ═══════════════════════════════════════════════════════════════
-function switchDoc(id) { currentDoc=id; currentSec=0; renderSidebar(); renderSecTabs(); renderContent(); }
-function switchSec(i) {
-  const def = DOC_DEFS[currentDoc];
-  if (i<0||i>=def.sections.length) return;
-  currentSec=i; renderSecTabs(); renderContent();
-}
-function toggleChk(k) {
-  formData[k]=!formData[k];
-  const el=document.getElementById("cb_"+safeId(k));
-  if(el) el.className="chk-box"+(formData[k]?" on":"");
-}
-function setRadio(id,val) {
-  formData[id]=val;
-  document.querySelectorAll(`[id^="rd_${safeId(id)}_"]`).forEach(el=>el.className="radio-dot");
-  const t=document.getElementById(`rd_${safeId(id)}_${safeId(val)}`);
-  if(t) t.className="radio-dot on";
-}
-function updateProg() {
-  const ids=[];
-  Object.keys(DOC_DEFS).forEach(docId=>{
-    DOC_DEFS[docId].sections.forEach(s=>{
-      if(s.fields) s.fields.forEach(f=>ids.push(f.id));
-      if(s.tocFields) s.tocFields.forEach(f=>ids.push(f.id));
-    });
-  });
-  const filled=ids.filter(k=>formData[k]&&formData[k].toString().trim()).length;
-  const pct=Math.round(filled/ids.length*100);
-  document.getElementById("progFill").style.width=pct+"%";
-  document.getElementById("progPct").textContent=pct+"%";
-}
-function saveAll() {
-  try{localStorage.setItem("clinica_eveline",JSON.stringify(formData));}catch(e){}
-  const b=document.getElementById("saveBtn");
-  b.textContent="✓ Salvo"; b.classList.add("ok");
-  setTimeout(()=>{b.textContent="Salvar";b.classList.remove("ok");},2000);
-}
-function loadAll() {
-  try{const s=localStorage.getItem("clinica_eveline");if(s){const d=JSON.parse(s);Object.keys(d).forEach(k=>{formData[k]=d[k];});}}catch(e){}
-}
-function newForm() {
-  if(!confirm("Criar nova ficha? Todos os dados serão perdidos.")) return;
-  initData(); currentDoc="anamnese"; currentSec=0;
-  renderSidebar(); renderSecTabs(); renderContent();
-}
-function esc(s){return s.replace(/'/g,"\\'");}
-function safeId(s){return s.replace(/[^a-z0-9]/gi,"_");}
+// ── EXPORT ──
+function exportarDocPaciente(tipo) {
+  const p = currentPaciente;
+  const today = new Date().toLocaleDateString("pt-BR");
+  let content = "";
 
-// ═══════════════════════════════════════════════════════════════
-// INSTALL
-// ═══════════════════════════════════════════════════════════════
-window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstall=e;renderContent();});
-function triggerInst(){if(!deferredInstall)return;deferredInstall.prompt();deferredInstall.userChoice.then(()=>{deferredInstall=null;dismissInst();});}
-function dismissInst(){sessionStorage.setItem("instDismiss","1");const b=document.querySelector(".install-banner");if(b)b.remove();}
+  const base = `
+    <div style="background:#1B4F72;color:#fff;padding:10px 14px;margin-bottom:10px;">
+      <h1 style="font-size:13pt;font-family:Georgia,serif">${PROF.nome} · ${PROF.crp}</h1>
+      <p style="font-size:8pt;color:#AED6F1">${tipo.toUpperCase()} · Paciente: ${p.nome} · Data: ${today}</p>
+    </div>`;
 
-// ═══════════════════════════════════════════════════════════════
-// EXPORT
-// ═══════════════════════════════════════════════════════════════
-// Get patient name from anamnese
-function getPaciente() { return formData.nome || "Paciente"; }
-function getDataHoje() { return new Date().toLocaleDateString("pt-BR"); }
+  if (tipo === "programacao") { exportarProgDoc(p); return; }
 
-function buildExportHTML(forWord) {
-  const today = getDataHoje();
-  const paciente = getPaciente();
-  const docLabel = DOCS.find(d=>d.id===currentDoc)?.label || currentDoc;
-  const def = DOC_DEFS[currentDoc];
+  content = base + `
+    <table style="width:100%;border-collapse:collapse">
+      <tr><td style="background:#EBF5FB;border:.5px solid #AED6F1;padding:5px 8px;font-weight:600;font-size:8pt;width:35%">Paciente</td><td style="border:.5px solid #AED6F1;padding:5px 8px;font-size:8.5pt">${p.nome}</td></tr>
+      <tr><td style="background:#EBF5FB;border:.5px solid #AED6F1;padding:5px 8px;font-weight:600;font-size:8pt">Data de nascimento</td><td style="border:.5px solid #AED6F1;padding:5px 8px;font-size:8.5pt">${formatDate(p.data_nascimento)}</td></tr>
+      <tr><td style="background:#EBF5FB;border:.5px solid #AED6F1;padding:5px 8px;font-weight:600;font-size:8pt">Telefone</td><td style="border:.5px solid #AED6F1;padding:5px 8px;font-size:8.5pt">${p.telefone||"—"}</td></tr>
+      <tr><td style="background:#EBF5FB;border:.5px solid #AED6F1;padding:5px 8px;font-weight:600;font-size:8pt">Tipo de atendimento</td><td style="border:.5px solid #AED6F1;padding:5px 8px;font-size:8.5pt">${p.tipo_atendimento||"—"}</td></tr>
+    </table>
+    <div style="margin-top:40px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;color:#777">
+      Assinatura: _________________________________ &nbsp; ${PROF.crp}
+    </div>`;
 
-  const v = id => (formData[id]||"").toString().replace(/\n/g,"<br>")||"&nbsp;";
-  const row = (label,id) => `<tr><td class="lc">${label}</td><td class="vc">${v(id)}</td></tr>`;
-  const radioRow = (label,id) => `<tr><td class="lc">${label}</td><td class="vc">${formData[id]||"&nbsp;"}</td></tr>`;
-
-  const wordMeta = forWord?`<meta name=ProgId content=Word.Document><meta name=Generator content="Microsoft Word">
-    <!--[if gte mso 9]><xml><w:WordDocument><w:View>Normal</w:View></w:WordDocument></xml><![endif]-->`:""
-  const printScript = forWord?"":`<script>window.onload=function(){window.print();}<\/script>`;
-
-  let body = "";
-  def.sections.forEach(sec => {
-    body += `<div class="sec">${sec.title}</div>`;
-    if (sec.fields) {
-      body += "<table>";
-      sec.fields.forEach(f => {
-        if (f.type==="radio") body += radioRow(f.label, f.id);
-        else body += row(f.label, f.id);
-      });
-      body += "</table>";
-    }
-    if (sec.subsections) {
-      sec.subsections.forEach(sub => {
-        body += `<div class="sub">${sub.title}</div>`;
-        body += `<div class="checks">${sub.checks.map(c=>`<span class="ci">${formData[sub.prefix+"_"+c]?"☑":"☐"} ${c}</span>`).join("")}</div>`;
-      });
-      if (sec.tocFields) {
-        body += `<div class="sub">TOC</div><table>`;
-        sec.tocFields.forEach(f => {
-          if (f.type==="radio") body+=radioRow(f.label,f.id); else body+=row(f.label,f.id);
-        });
-        body += "</table>";
-      }
-    }
-    if (sec.checks2) {
-      sec.checks2.forEach(grp => {
-        body += `<div class="sub">${grp.group}</div>`;
-        body += `<div class="checks">${grp.items.map(c=>`<span class="ci">${formData[grp.prefix+"_"+c]?"☑":"☐"} ${c}</span>`).join("")}</div>`;
-      });
-    }
-    if (sec.checksTestes) {
-      body += `<div class="sub">Instrumentos Aplicados</div><div class="checks">`;
-      body += sec.checksTestes.map(c=>`<span class="ci">${formData["teste_"+c]?"☑":"☐"} ${c}</span>`).join("");
-      body += "</div>";
-    }
-    if (sec.checksDocs) {
-      body += `<div class="sub">Documentos</div><table>`;
-      sec.checksDocs.forEach(c => { body+=`<tr><td class="lc">${c.label}</td><td class="vc">${formData[c.id]?"✅ Sim":"☐ Pendente"}</td></tr>`; });
-      body += "</table>";
-      if (sec.fields) { body+="<table>"; sec.fields.forEach(f=>{ body+=row(f.label,f.id); }); body+="</table>"; }
-    }
-  });
-
-  return `<!DOCTYPE html><html lang="pt-BR">
-<head><meta charset="UTF-8"/>${wordMeta}
-<title>${docLabel} – ${paciente}</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;700&family=Source+Sans+3:wght@400;600&display=swap');
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:'Source Sans 3',Arial,sans-serif;font-size:9pt;color:#1a1a2e;background:#fff;${forWord?"margin:1.8cm 2cm;":""}}
-  @page{size:A4;margin:14mm 16mm;}
-  @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
-  .hdr{background:#1B4F72;color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
-  .hdr-l h1{font-family:'Source Serif 4',serif;font-size:12.5pt;font-weight:700;}
-  .hdr-l .doc{font-size:9pt;color:#AED6F1;margin-top:2px;}
-  .hdr-l .pac{font-size:8pt;color:#7EC8E3;margin-top:1px;}
-  .hdr-r{text-align:right;font-size:8pt;color:#AED6F1;line-height:1.7;white-space:nowrap;}
-  .hdr-r strong{color:#fff;}
-  .sec{font-family:'Source Serif 4',serif;font-size:10.5pt;font-weight:700;color:#1B4F72;border-bottom:1.5px solid #2E86C1;padding-bottom:2px;margin:11px 0 4px;}
-  .sub{font-size:8.5pt;font-weight:600;color:#2E86C1;background:#EBF5FB;padding:3px 7px;margin:5px 0 2px;border-radius:2px;}
-  table{width:100%;border-collapse:collapse;margin-bottom:2px;}
-  .lc{width:35%;background:#EBF5FB;border:.5px solid #AED6F1;padding:4px 7px;font-weight:600;font-size:8pt;color:#1A5276;vertical-align:top;}
-  .vc{background:#FDFEFE;border:.5px solid #AED6F1;padding:4px 7px;font-size:8.5pt;vertical-align:top;}
-  .checks{display:flex;flex-wrap:wrap;gap:3px 14px;background:#EAF2FF;border:.5px solid #AED6F1;padding:5px 8px;margin-bottom:3px;}
-  .ci{font-size:8.5pt;white-space:nowrap;}
-  .foot{margin-top:16px;border-top:.5px solid #ccc;padding-top:6px;display:flex;justify-content:space-between;font-size:7.5pt;color:#777;}
-</style>${printScript}</head><body>
-<div class="hdr">
-  <div class="hdr-l">
-    <h1>${PROF.nome} &nbsp;·&nbsp; ${PROF.crp}</h1>
-    <div class="doc">${docLabel}</div>
-    <div class="pac">Paciente: ${paciente}</div>
-  </div>
-  <div class="hdr-r"><strong>Data:</strong> ${today}<br><strong>Avaliador(a):</strong> ${PROF.nome}</div>
-</div>
-${body}
-<div class="foot">
-  <span>Assinatura: _________________________________ &nbsp; ${PROF.crp}</span>
-  <span>Confidencial · LGPD · ${today}</span>
-</div></body></html>`;
-}
-
-function exportPDF() {
+  logAudit("exportar", "documentos", `Documento "${tipo}" exportado para paciente: ${p.nome}`);
   const win = window.open("","_blank");
-  if (!win) { alert("Permita pop-ups para exportar PDF."); return; }
-  win.document.write(buildExportHTML(false));
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${tipo} – ${p.nome}</title>
+    <style>body{font-family:Arial,sans-serif;font-size:9pt;margin:1.5cm 2cm;}@page{size:A4;margin:14mm 16mm;}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style>
+    <script>window.onload=function(){window.print();}<\/script></head><body>${content}</body></html>`);
   win.document.close();
 }
 
-function exportWord() {
-  const html = buildExportHTML(true);
-  const blob = new Blob(["\ufeff"+html],{type:"application/msword;charset=utf-8"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  const nome = getPaciente().replace(/\s+/g,"_");
-  const docLabel = DOCS.find(d=>d.id===currentDoc)?.label.replace(/\s+/g,"_")||currentDoc;
-  a.href=url; a.download=`${docLabel}_${nome}.doc`;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+async function exportarProgDoc(pac) {
+  try {
+    const progs = await sbFetch(`programacoes?paciente_id=eq.${pac.id}&select=*&order=created_at.desc&limit=1`) || [];
+    if (!progs.length) { showToast("Nenhuma programação encontrada. Crie primeiro.", "error"); return; }
+    const pr = progs[0];
+    exportarProgramacao(pr, pac.nome);
+  } catch(e) { showToast("Erro ao buscar programação", "error"); }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// SERVICE WORKER
-// ═══════════════════════════════════════════════════════════════
+function exportarProgramacao(pr, pacNome) {
+  const sessoes = JSON.parse(pr.sessoes || "[]");
+  const nome = pacNome || pr.paciente_nome || "Paciente";
+  const today = new Date().toLocaleDateString("pt-BR");
+  const valorNum = parseFloat((pr.valor_total||"0").replace(",","."));
+  const valorPix = pr.valor_pix ? parseFloat(pr.valor_pix) : valorNum * 0.95;
+
+  const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+    <title>Programação – ${nome}</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;700&family=Source+Sans+3:wght@400;600&display=swap');
+      *{box-sizing:border-box;margin:0;padding:0;}
+      body{font-family:'Source Sans 3',Arial,sans-serif;font-size:10pt;color:#1a1a2e;background:#fff;margin:1.8cm 2cm;}
+      @page{size:A4;margin:14mm 16mm;}
+      @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
+      .hdr{background:#1B4F72;color:#fff;padding:14px 18px;margin-bottom:16px;border-radius:2px;}
+      .hdr h1{font-family:'Source Serif 4',serif;font-size:14pt;font-weight:700;}
+      .hdr p{font-size:8.5pt;color:#AED6F1;margin-top:3px;}
+      .saudacao{font-size:11pt;margin-bottom:20px;line-height:1.6;}
+      .sec{font-family:'Source Serif 4',serif;font-size:12pt;font-weight:700;color:#1B4F72;border-bottom:1.5px solid #2E86C1;padding-bottom:3px;margin:20px 0 10px;}
+      .sessao{display:flex;gap:14px;align-items:flex-start;padding:8px 0;border-bottom:.5px solid #eee;}
+      .sessao-num{width:28px;height:28px;border-radius:50%;background:#1B4F72;color:#fff;font-size:10pt;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+      .sessao-num.skip{background:#e5e7eb;color:#9ca3af;}
+      .sessao-data{font-size:10pt;font-weight:600;color:#1a1a2e;}
+      .sessao-desc{font-size:9pt;color:#555;margin-top:2px;}
+      .invest{background:#EBF5FB;border:1px solid #AED6F1;border-radius:4px;padding:16px 20px;margin-top:20px;}
+      .invest h3{font-family:'Source Serif 4',serif;font-size:12pt;color:#1B4F72;margin-bottom:10px;}
+      .invest p{font-size:9.5pt;color:#333;line-height:1.7;}
+      .obs{font-size:8.5pt;color:#666;margin-top:12px;font-style:italic;line-height:1.6;}
+      .foot{margin-top:30px;border-top:.5px solid #ccc;padding-top:8px;font-size:8pt;color:#777;text-align:center;}
+    </style>
+    <script>window.onload=function(){window.print();}<\/script>
+    </head><body>
+    <div class="hdr">
+      <h1>Programação da Avaliação Neuropsicológica</h1>
+      <p>${PROF.nome} · ${PROF.crp} · Psicóloga / Neuropsicóloga</p>
+    </div>
+    <div class="saudacao">
+      Paciente: <strong>${nome}</strong><br>
+      Psicóloga Responsável: <strong>${PROF.nome} – ${PROF.crp}</strong><br><br>
+      Olá, <strong>${nome.split(" ")[0]}</strong>.<br>
+      Segue a programação do seu processo de Avaliação Neuropsicológica.
+    </div>
+    <div class="sec">Cronograma de Atendimentos</div>
+    <p style="font-size:9.5pt;color:#555;margin-bottom:10px">Horário fixo: ${pr.dia_semana || "a combinar"}, às ${pr.horario_fixo}</p>
+    ${sessoes.map(s => `
+      <div class="sessao">
+        <div class="sessao-num ${s.skip?'skip':''}">${s.skip?'—':s.num+'ª'}</div>
+        <div><div class="sessao-data">${s.data}${s.dia?' ('+s.dia+')':''}</div><div class="sessao-desc">${s.descricao}</div></div>
+      </div>`).join("")}
+    ${pr.valor_total ? `
+    <div class="invest">
+      <h3>Investimento</h3>
+      <p>O processo completo de Avaliação Neuropsicológica corresponde a um pacote fechado, contemplando todo o percurso avaliativo, análise técnica, correção dos instrumentos, integração clínica dos resultados, elaboração do laudo psicológico e sessão devolutiva.</p>
+      <p style="margin-top:12px"><strong>Valor total: R$ ${pr.valor_total}</strong></p>
+      <p style="margin-top:8px">Formas de pagamento:<br>
+      ✔ À vista via PIX: R$ ${valorPix.toLocaleString("pt-BR",{minimumFractionDigits:2})} (${pr.desconto_pix}% de desconto)<br>
+      ✔ Cartão de crédito: parcelamento em até ${pr.parcelas_cartao}x sem juros</p>
+      <p class="obs">O valor refere-se ao processo avaliativo completo (pacote fechado), independentemente do número de sessões eventualmente necessárias dentro da condução técnica do caso, uma vez que envolve não apenas os encontros presenciais, mas também todo o trabalho técnico especializado de análise, interpretação clínica e elaboração documental.</p>
+    </div>` : ""}
+    ${pr.observacoes ? `<div style="margin-top:16px;padding:12px;background:#fafafa;border:1px solid #eee;font-size:9pt;color:#555">${pr.observacoes}</div>` : ""}
+    <div class="foot">${PROF.nome} · ${PROF.crp} · Documento gerado em ${today}</div>
+    </body></html>`;
+
+  const win = window.open("","_blank");
+  win.document.write(html);
+  win.document.close();
+}
+
+function gerarDocumento(tipo) {
+  if (!pacientes.length) { showToast("Cadastre um paciente primeiro!", "error"); return; }
+  showView("pacientes");
+  showToast("Selecione um paciente para gerar o documento.", "success");
+}
+
+function exportDocAtual() {
+  if (currentPaciente) exportarDocPaciente("geral");
+}
+
+// ── HELPERS ──
+function infoRow(label, value) {
+  return `<div style="display:flex;gap:0;margin-bottom:8px;background:var(--surface2);border-radius:3px;overflow:hidden">
+    <div style="background:var(--label-bg);padding:7px 12px;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;min-width:140px;display:flex;align-items:center">${label}</div>
+    <div style="padding:7px 12px;font-size:12px;color:var(--text);flex:1">${value || "—"}</div>
+  </div>`;
+}
+
+function formatDate(d) { if (!d) return "—"; try { return new Date(d+"T12:00:00").toLocaleDateString("pt-BR"); } catch(e) { return d; } }
+function labelStatus(s) { return s==="ativo"?"Em Avaliação":s==="concluido"?"Concluído":s==="aguardando"?"Aguardando":"—"; }
+
+function openModal(id) {
+  document.getElementById(id).classList.add("open");
+  // Populate pacientes in selects
+  if (id === "novoAgendModal" || id === "progModal") {
+    const selects = document.querySelectorAll(`#${id} select[id^="agend"], #${id} select[id^="prog"]`);
+    selects.forEach(sel => {
+      if (sel.id === "agendPac" || sel.id === "progPac") {
+        sel.innerHTML = `<option value="">Selecione o paciente</option>` + pacientes.map(p=>`<option value="${p.id}">${p.nome}</option>`).join("");
+      }
+    });
+  }
+}
+function closeModal(id) { document.getElementById(id).classList.remove("open"); }
+
+function showToast(msg, type = "") {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.className = "toast " + type;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 3000);
+}
+
+// ── SERVICE WORKER ──
 if ("serviceWorker" in navigator) {
-  const sw = `const C="clinica-v1";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["."])));self.skipWaiting();});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim();});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>caches.match("."))));});`;
-  const swBlob = new Blob([sw],{type:"text/javascript"});
-  navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(()=>{});
+  const sw = `const C="clinica-v2";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["."])));self.skipWaiting();});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim();});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>caches.match("."))));});`;
+  navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"text/javascript"}))).catch(()=>{});
 }
 
-// ═══════════════════════════════════════════════════════════════
-// BOOT
-// ═══════════════════════════════════════════════════════════════
-initData();
-loadAll();
-renderSidebar();
-renderSecTabs();
-renderContent();
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); e.prompt(); });
+
+// ── PASSWORD TOGGLE ──
+function togglePass(inputId, btn) {
+  const inp = document.getElementById(inputId);
+  if (inp.type === "password") { inp.type = "text"; btn.textContent = "🙈"; }
+  else { inp.type = "password"; btn.textContent = "👁️"; }
+}
+
+// ── FORGOT PASSWORD ──
+async function doForgotPass() {
+  const email = document.getElementById("forgotEmail").value.trim();
+  const err = document.getElementById("forgotErr");
+  const success = document.getElementById("forgotSuccess");
+  err.textContent = ""; success.style.display = "none";
+  if (!email) { err.textContent = "Digite seu e-mail."; return; }
+  const btn = document.querySelector("#forgotScreen .btn-login");
+  btn.textContent = "Enviando..."; btn.disabled = true;
+  try {
+    const res = await fetch(`${SB_URL}/auth/v1/recover`, {
+      method: "POST",
+      headers: {
+        "apikey": SB_KEY,
+        "Authorization": `Bearer ${SB_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        email,
+        redirect_to: "https://evelinemourao.github.io/clinica"
+      })
+    });
+    // Supabase returns 200 even if email not found (security)
+    // So we always show success to avoid user enumeration
+    success.style.display = "block";
+    document.getElementById("forgotEmail").value = "";
+  } catch(e) {
+    err.textContent = "Erro de conexão. Verifique sua internet e tente novamente.";
+  } finally {
+    btn.textContent = "Enviar Link de Recuperação"; btn.disabled = false;
+  }
+}
+
+// ── LOG AUDITORIA ──
+async function logAudit(acao, modulo, descricao, detalhes) {
+  if (!currentUser) return;
+  try {
+    await sbFetch("auditoria", { method: "POST", body: JSON.stringify({
+      user_email: currentUser.email,
+      user_nome: currentUser.nome,
+      acao, modulo, descricao,
+      detalhes: detalhes || null
+    })});
+  } catch(e) { /* silently fail */ }
+}
+
+// ── LOAD AUDITORIA ──
+async function loadAuditoria() {
+  const el = document.getElementById("auditoriaList");
+  el.innerHTML = `<div class="loading"><div class="spinner"></div></div>`;
+  const de = document.getElementById("auditDe").value;
+  const ate = document.getElementById("auditAte").value;
+  const usuario = document.getElementById("auditUsuario").value;
+  const modulo = document.getElementById("auditModulo").value;
+
+  let query = "auditoria?select=*&order=created_at.desc&limit=200";
+  if (de) query += `&created_at=gte.${de}T00:00:00`;
+  if (ate) query += `&created_at=lte.${ate}T23:59:59`;
+  if (usuario) query += `&user_email=eq.${encodeURIComponent(usuario)}`;
+  if (modulo) query += `&modulo=eq.${modulo}`;
+
+  try {
+    const logs = await sbFetch(query) || [];
+    if (!logs.length) {
+      el.innerHTML = `<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">Nenhum registro encontrado no período</div></div>`;
+      return;
+    }
+    // Populate user filter
+    const usuarios = [...new Set(logs.map(l => l.user_email).filter(Boolean))];
+    const sel = document.getElementById("auditUsuario");
+    sel.innerHTML = `<option value="">Todos</option>` + usuarios.map(u => `<option value="${u}" ${usuario===u?"selected":""}>${u}</option>`).join("");
+
+    // Stats
+    const statsEl = document.getElementById("auditoriaStats");
+    if (statsEl) {
+      statsEl.style.display = "block";
+      document.getElementById("auditTotal").textContent = logs.length;
+      document.getElementById("auditLogins").textContent = logs.filter(l=>l.acao==="login").length;
+      document.getElementById("auditCriações").textContent = logs.filter(l=>l.acao==="criar").length;
+      document.getElementById("auditExports").textContent = logs.filter(l=>l.acao==="exportar").length;
+      document.getElementById("auditExclusoes").textContent = logs.filter(l=>l.acao==="excluir").length;
+    }
+
+    // Group by date
+    const grouped = {};
+    logs.forEach(l => {
+      const date = new Date(l.created_at).toLocaleDateString("pt-BR", {weekday:"long", day:"numeric", month:"long", year:"numeric"});
+      if (!grouped[date]) grouped[date] = [];
+      grouped[date].push(l);
+    });
+
+    el.innerHTML = Object.keys(grouped).map(date => {
+      const items = grouped[date].map(l => {
+        const dt = new Date(l.created_at);
+        const hora = dt.toLocaleTimeString("pt-BR", {hour:"2-digit", minute:"2-digit"});
+        const dotClass = l.acao === "criar" ? "create" : l.acao === "excluir" ? "delete" : l.acao === "login" ? "login" : l.acao === "exportar" ? "export" : "";
+        const emoji = l.acao === "criar" ? "➕" : l.acao === "excluir" ? "🗑️" : l.acao === "login" ? "🔑" : l.acao === "exportar" ? "📄" : l.acao === "editar" ? "✏️" : "📋";
+        return `<div class="audit-item">
+          <div class="audit-dot ${dotClass}"></div>
+          <div style="flex:1">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+              <span class="audit-user">${l.user_nome || l.user_email || "Usuário"}</span>
+              <span class="audit-time">${hora}</span>
+            </div>
+            <div class="audit-desc">${emoji} ${l.descricao || ""}</div>
+            <div style="font-size:9px;color:var(--text3);margin-top:2px">${l.modulo || ""} · ${l.user_email || ""}</div>
+          </div>
+        </div>`;
+      }).join("");
+      return `<div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.15em;padding:10px 14px 4px;border-bottom:1px solid var(--border2);background:var(--bg)">${date}</div>${items}`;
+    }).join("");
+  } catch(e) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-text">Erro ao carregar. Execute o SQL de auditoria no Supabase primeiro.</div></div>`;
+  }
+}
+
+// ── EXPORTAR AUDITORIA ──
+function exportarAuditoria() {
+  const el = document.getElementById("auditoriaList");
+  const items = el.querySelectorAll(".audit-item");
+  if (!items.length) { showToast("Nenhum dado para exportar.", "error"); return; }
+  const de = document.getElementById("auditDe").value;
+  const ate = document.getElementById("auditAte").value;
+  const today = new Date().toLocaleDateString("pt-BR");
+
+  const total = document.getElementById("auditTotal")?.textContent || "0";
+  const logins = document.getElementById("auditLogins")?.textContent || "0";
+  const criações = document.getElementById("auditCriações")?.textContent || "0";
+  const exports = document.getElementById("auditExports")?.textContent || "0";
+  const exclusoes = document.getElementById("auditExclusoes")?.textContent || "0";
+
+  let rows = "";
+  items.forEach(item => {
+    const user = item.querySelector(".audit-user")?.textContent || "";
+    const time = item.querySelector(".audit-time")?.textContent || "";
+    const desc = item.querySelector(".audit-desc")?.textContent || "";
+    const divs = item.querySelectorAll("div");
+    const mod = divs[divs.length-1]?.textContent || "";
+    rows += `<tr><td>${time}</td><td>${user}</td><td>${mod}</td><td>${desc}</td></tr>`;
+  });
+
+  const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+    <title>Relatório de Auditoria</title>
+    <style>
+      body{font-family:Arial,sans-serif;font-size:9pt;margin:1.5cm 2cm;}
+      @page{size:A4;margin:12mm 16mm;}
+      @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
+      .hdr{background:#1B4F72;color:#fff;padding:10px 14px;margin-bottom:12px;}
+      .hdr h1{font-size:13pt;font-family:Georgia,serif;}
+      .hdr p{font-size:8pt;color:#AED6F1;margin-top:2px;}
+      table{width:100%;border-collapse:collapse;font-size:8.5pt;}
+      th{background:#1B4F72;color:#fff;padding:6px 8px;text-align:left;font-size:8pt;}
+      td{border-bottom:.5px solid #e5e7eb;padding:5px 8px;vertical-align:top;}
+      tr:nth-child(even) td{background:#f9fafb;}
+      .foot{margin-top:16px;border-top:.5px solid #ccc;padding-top:6px;font-size:7.5pt;color:#777;text-align:center;}
+    </style>
+    <script>window.onload=function(){window.print();}<\/script>
+    </head><body>
+    <div class="hdr">
+      <h1>Relatório de Auditoria do Sistema</h1>
+      <p>${PROF.nome} · ${PROF.crp} · Período: ${de ? de : "início"} até ${ate ? ate : "hoje"} · Gerado em: ${today}</p>
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;padding:10px 14px;background:#EBF5FB;border-radius:4px;border:1px solid #AED6F1">
+      <span style="font-size:9pt"><strong>Total:</strong> ${total}</span>
+      <span style="font-size:9pt"><strong>Logins:</strong> ${logins}</span>
+      <span style="font-size:9pt"><strong>Criações:</strong> ${criações}</span>
+      <span style="font-size:9pt"><strong>Exportações:</strong> ${exports}</span>
+      <span style="font-size:9pt"><strong>Exclusões:</strong> ${exclusoes}</span>
+    </div>
+    <table>
+      <thead><tr><th>Hora</th><th>Usuário</th><th>Módulo / E-mail</th><th>Ação</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="foot">${PROF.nome} · ${PROF.crp} · Relatório de Auditoria · ${today}</div>
+    </body></html>`;
+
+  const win = window.open("","_blank");
+  win.document.write(html);
+  win.document.close();
+}
+
+// ── BOOT ──
+// Pre-fill saved email
+const savedEmail = localStorage.getItem("saved_email");
+if (savedEmail) {
+  const emailInput = document.getElementById("loginEmail");
+  if (emailInput) emailInput.value = savedEmail;
+}
+
+const session = localStorage.getItem("clinica_session");
+if (session) {
+  try { currentUser = JSON.parse(session); showScreen("appScreen"); initApp(); } catch(e) { localStorage.removeItem("clinica_session"); }
+}
+
+document.addEventListener("keydown", e => { if (e.key === "Enter" && document.getElementById("loginScreen").classList.contains("active")) doLogin(); });
 </script>
 </body>
 </html>
