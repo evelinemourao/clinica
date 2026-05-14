@@ -541,7 +541,7 @@ body { font-family: 'JetBrains Mono', monospace; background: var(--bg); color: v
         <div class="fg"><div class="flabel">Data de nascimento</div><input class="finput" type="date" id="pacNasc"/></div>
       </div>
       <div class="frow">
-        <div class="fg"><div class="flabel">Telefone</div><input class="finput" type="tel" id="pacTel" placeholder="88- 9 9214-8745" oninput="maskPhone(this)"/></div>
+        <div class="fg"><div class="flabel">Telefone</div><input class="finput" type="tel" id="pacTel" placeholder="(84) 9 9704-9997" oninput="maskPhone(this)"/></div>
         <div class="fg"><div class="flabel">E-mail</div><input class="finput" type="email" id="pacEmail" placeholder="email@exemplo.com"/></div>
       </div>
       <div class="frow">
@@ -873,6 +873,16 @@ function showPacTab(tab) {
       <button class="doc-btn" onclick="exportarDocPaciente('programacao')"><div class="doc-btn-icon">📅</div><div class="doc-btn-label">Programação</div></button>
       <button class="doc-btn" onclick="exportarDocPaciente('recibo')"><div class="doc-btn-icon">🧾</div><div class="doc-btn-label">Recibo</div></button>
       <button class="doc-btn" onclick="exportarDocPaciente('acordo')"><div class="doc-btn-icon">🤝</div><div class="doc-btn-label">Acordo de Serviços</div></button>
+      <button class="doc-btn" onclick="exportarDocPaciente('laudo-tdah')"><div class="doc-btn-icon">🧠</div><div class="doc-btn-label">Laudo TDAH</div></button>
+      <button class="doc-btn" onclick="exportarDocPaciente('laudo-tea')"><div class="doc-btn-icon">🧩</div><div class="doc-btn-label">Laudo TEA</div></button>
+      <button class="doc-btn" onclick="exportarDocPaciente('laudo-dislexia')"><div class="doc-btn-icon">📖</div><div class="doc-btn-label">Laudo Dislexia</div></button>
+      <button class="doc-btn" onclick="exportarDocPaciente('laudo-altas')"><div class="doc-btn-icon">⭐</div><div class="doc-btn-label">Laudo Altas Hab.</div></button>
+      <button class="doc-btn" onclick="exportarDocPaciente('laudo-ansiedade')"><div class="doc-btn-icon">💭</div><div class="doc-btn-label">Laudo Ansiedade</div></button>
+      <button class="doc-btn" onclick="exportarDocPaciente('laudo-toc')"><div class="doc-btn-icon">🔄</div><div class="doc-btn-label">Laudo TOC</div></button>
+      <button class="doc-btn" onclick="exportarDocPaciente('laudo-depressao')"><div class="doc-btn-icon">🌧️</div><div class="doc-btn-label">Laudo Depressão</div></button>
+      <button class="doc-btn" onclick="exportarDocPaciente('laudo-inss')"><div class="doc-btn-icon">📋</div><div class="doc-btn-label">Laudo INSS</div></button>
+      <button class="doc-btn" onclick="exportarDocPaciente('laudo-juridico')"><div class="doc-btn-icon">⚖️</div><div class="doc-btn-label">Laudo Jurídico</div></button>
+      <button class="doc-btn" onclick="exportarDocPaciente('laudo-escola')"><div class="doc-btn-icon">🏫</div><div class="doc-btn-label">Relatório Escolar</div></button>
     </div>`;
   } else if (tab === "historico") {
     loadHistorico(c, p.id);
@@ -974,10 +984,14 @@ function renderProgCard(pr, pacNome) {
       </div>
       <button class="btn-secondary" onclick="exportarProgramacao(${JSON.stringify(pr).replace(/"/g,'&quot;')})">⬇ PDF</button>
     </div>
-    ${sessoes.map(s => `
+    ${sessoes.map((s,idx) => `
       <div class="prog-session">
         <div class="prog-num ${s.skip ? 'skip' : ''}">${s.skip ? '—' : s.num}</div>
-        <div><div class="prog-date">${s.data} ${s.dia ? '('+s.dia+')' : ''}</div><div class="prog-desc">${s.descricao}</div></div>
+        <div style="flex:1"><div class="prog-date">${s.data} ${s.dia ? '('+s.dia+')' : ''}</div><div class="prog-desc">${s.descricao}</div></div>
+        <div style="display:flex;gap:4px;flex-shrink:0">
+          <button class="btn-icon" onclick="editarSessaoProg('${pr.id}',${idx},'${s.data}','${s.descricao}')" title="Editar">✏️</button>
+          <button class="btn-icon" onclick="excluirSessaoProg('${pr.id}',${idx})" title="Excluir" style="color:#f87171">🗑️</button>
+        </div>
       </div>`).join("")}
   </div>`;
 }
@@ -1049,17 +1063,111 @@ async function salvarProgramacao() {
 
 // ── USUÁRIOS ──
 async function loadUsuarios() {
-  // Apenas mostra info básica — gestão real requer service_role
-  document.getElementById("usersList").innerHTML = `
-    <div class="prog-card">
-      <div style="font-family:'Crimson Pro',serif;font-size:16px;color:var(--gold);margin-bottom:12px">Usuários do Sistema</div>
-      ${infoRow("Usuário atual", currentUser?.nome || currentUser?.email)}
-      ${infoRow("E-mail", currentUser?.email)}
-      <div style="margin-top:16px;padding:12px;background:var(--bg);border-radius:4px;border:1px solid var(--border)">
-        <div style="font-size:10px;color:var(--text3);margin-bottom:6px">Para adicionar novos usuários:</div>
-        <div style="font-size:11px;color:var(--text2)">Peça para a pessoa acessar o link do sistema e criar uma conta própria na tela de login.</div>
+  const el = document.getElementById("usersList");
+  el.innerHTML = `<div class="loading"><div class="spinner"></div></div>`;
+  try {
+    // Fetch users from profiles table
+    const users = await sbFetch("perfis_usuarios?select=*&order=created_at.asc") || [];
+    const isAdmin = currentUser?.perfil === "admin" || true; // admin can see all
+    el.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div style="font-family:'Crimson Pro',serif;font-size:16px;color:var(--gold)">Usuários Cadastrados</div>
+        <div style="font-size:10px;color:var(--text3)">${users.length} usuário(s)</div>
       </div>
-    </div>`;
+      ${users.length === 0 ? `<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">Nenhum usuário cadastrado ainda</div></div>` :
+        users.map(u => `
+        <div class="agenda-item" style="margin-bottom:8px;flex-wrap:wrap;gap:8px">
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--header);color:white;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">
+            ${(u.nome||u.email||"?")[0].toUpperCase()}
+          </div>
+          <div style="flex:1;min-width:160px">
+            <div style="font-size:13px;color:var(--text);font-weight:600">${u.nome || "—"}</div>
+            <div style="font-size:10px;color:var(--text3)">${u.email}</div>
+            <div style="font-size:9px;margin-top:2px">
+              <span style="background:${u.ativo===false?"rgba(153,27,27,.3)":"rgba(22,101,52,.3)"};color:${u.ativo===false?"#f87171":"#4ade80"};padding:2px 7px;border-radius:8px;font-weight:700">
+                ${u.ativo===false?"Inativo":"Ativo"}
+              </span>
+              <span style="margin-left:6px;color:var(--text3)">${u.perfil||"visualizar"}</span>
+            </div>
+          </div>
+          ${isAdmin && u.email !== currentUser?.email ? `
+          <div style="display:flex;gap:5px;flex-shrink:0">
+            <button class="btn-icon" onclick="alterarPerfilUsuario('${u.id}','${u.perfil||"visualizar"}')" title="Alterar perfil">⚙️</button>
+            <button class="btn-icon" onclick="toggleUsuario('${u.id}',${u.ativo!==false})" title="${u.ativo===false?"Ativar":"Desativar"}" style="color:${u.ativo===false?"#4ade80":"#f87171"}">
+              ${u.ativo===false?"✓":"⊘"}
+            </button>
+          </div>` : ""}
+        </div>`).join("")
+      }
+      <div style="margin-top:16px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:4px;font-size:10px;color:var(--text3)">
+        💡 Novos usuários: peça para acessar o link e criar conta. Após o cadastro aparecerão aqui.
+      </div>`;
+  } catch(e) {
+    el.innerHTML = `
+      <div class="prog-card">
+        <div style="font-family:'Crimson Pro',serif;font-size:16px;color:var(--gold);margin-bottom:12px">Usuário Atual</div>
+        ${infoRow("Nome", currentUser?.nome || "—")}
+        ${infoRow("E-mail", currentUser?.email || "—")}
+        ${infoRow("Perfil", "Administrador")}
+        <div style="margin-top:12px;padding:10px;background:var(--bg);border-radius:4px;border:1px solid var(--border);font-size:10px;color:var(--text3)">
+          Execute o SQL de perfis no Supabase para ver todos os usuários cadastrados.
+        </div>
+      </div>`;
+  }
+}
+
+async function toggleUsuario(userId, ativo) {
+  try {
+    await sbFetch(`perfis_usuarios?id=eq.${userId}`, { method:"PATCH", body: JSON.stringify({ativo: !ativo}), prefer:"return=minimal"});
+    showToast(ativo ? "Usuário desativado." : "Usuário ativado.", "success");
+    loadUsuarios();
+  } catch(e) { showToast("Execute o SQL de perfis no Supabase.", "error"); }
+}
+
+async function alterarPerfilUsuario(userId, perfilAtual) {
+  const perfis = ["visualizar","assistente","admin"];
+  const novo = prompt(`Perfil atual: ${perfilAtual}\nDigite o novo perfil:\n- visualizar\n- assistente\n- admin`);
+  if (!novo || !perfis.includes(novo)) { showToast("Perfil inválido.", "error"); return; }
+  try {
+    await sbFetch(`perfis_usuarios?id=eq.${userId}`, { method:"PATCH", body: JSON.stringify({perfil: novo}), prefer:"return=minimal"});
+    showToast("Perfil atualizado!", "success");
+    loadUsuarios();
+  } catch(e) { showToast("Execute o SQL de perfis no Supabase.", "error"); }
+}
+
+
+// ── NÚMERO POR EXTENSO ──
+function numExtenso(valor) {
+  if (!valor || isNaN(valor)) return "";
+  const v = parseFloat(valor);
+  const unidades = ["","um","dois","três","quatro","cinco","seis","sete","oito","nove","dez","onze","doze","treze","quatorze","quinze","dezesseis","dezessete","dezoito","dezenove"];
+  const dezenas = ["","","vinte","trinta","quarenta","cinquenta","sessenta","setenta","oitenta","noventa"];
+  const centenas = ["","cem","duzentos","trezentos","quatrocentos","quinhentos","seiscentos","setecentos","oitocentos","novecentos"];
+  function c3(n) {
+    if (n === 0) return "";
+    if (n === 100) return "cem";
+    let r = "";
+    if (n >= 100) { r += centenas[Math.floor(n/100)]; n = n%100; if(n>0) r += " e "; }
+    if (n >= 20) { r += dezenas[Math.floor(n/10)]; n = n%10; if(n>0) r += " e " + unidades[n]; }
+    else if (n > 0) r += unidades[n];
+    return r;
+  }
+  const inteiro = Math.floor(v);
+  const cents = Math.round((v - inteiro) * 100);
+  let res = "";
+  if (inteiro >= 1000000) { res += c3(Math.floor(inteiro/1000000)) + " milhão"; if(inteiro%1000000>0) res += " e "; }
+  if (inteiro >= 1000) { const m = Math.floor((inteiro%1000000)/1000); if(m>0){ res += c3(m) + (m===1?" mil":" mil"); if(inteiro%1000>0) res += " e "; } }
+  const r3 = inteiro%1000; if(r3>0) res += c3(r3);
+  if (!res) res = "zero";
+  res += inteiro === 1 ? " real" : " reais";
+  if (cents > 0) res += " e " + c3(cents) + (cents === 1 ? " centavo" : " centavos");
+  return res;
+}
+
+function fmtMoeda(valor) {
+  if (!valor) return "—";
+  const v = parseFloat(String(valor).replace(",","."));
+  return `R$ ${v.toLocaleString("pt-BR",{minimumFractionDigits:2})} (${numExtenso(v)})`;
 }
 
 // ── EXPORT ──
@@ -1111,6 +1219,94 @@ function gerarDocHTML(tipo, p) {
   const nasc = formatDate(p.data_nascimento);
   const today = new Date().toLocaleDateString("pt-BR");
 
+  // ── ANAMNESE COMPLETA ──
+  if (tipo === "anamnese") return `
+    ${docHeader("FICHA DE ANAMNESE NEUROPSICOLÓGICA", n)}
+    <p style="font-size:8pt;color:#555;margin-bottom:10px;text-align:center;font-style:italic">Investigação diagnóstica diferencial: TOC · TDAH · Ansiedade · Altas Habilidades/Superdotação</p>
+    <div class="sec">1. Identificação</div>
+    <table>
+      ${docRow("Nome completo", n)}
+      ${docRow("Data de nascimento", nasc)}
+      ${docRow("Idade", "")}
+      ${docRow("Sexo", p.sexo||"")}
+      ${docRow("Estado civil", "")}
+      ${docRow("Escolaridade", "")}
+      ${docRow("Profissão", p.profissao||"")}
+      ${docRow("Telefone", tel)}
+      ${docRow("E-mail", p.email||"")}
+      ${docRow("Endereço", "")}
+      ${docRow("Encaminhamento", p.encaminhamento||"")}
+    </table>
+    <div class="sec">2. Motivo da Avaliação</div>
+    ${docField("Queixa principal", 3)}
+    ${docField("Tempo de ocorrência", 1)}
+    ${docField("Motivo da busca atual", 2)}
+    ${docField("Hipóteses diagnósticas prévias", 2)}
+    <div class="sec">3. Queixa Clínica Detalhada</div>
+    <div style="font-weight:600;font-size:9pt;color:#2E86C1;margin:6px 0 4px">Atenção / Funções Executivas</div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px 18px;background:#EAF2FF;padding:6px 10px;border-radius:2px;margin-bottom:6px">
+      ${["Distração frequente","Procrastinação","Hiperfoco","Impulsividade","Dificuldade de organização","Inquietação interna"].map(i=>`<span style="font-size:8.5pt">☐ ${i}</span>`).join("")}
+    </div>
+    <div style="font-weight:600;font-size:9pt;color:#2E86C1;margin:6px 0 4px">Ansiedade</div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px 18px;background:#EAF2FF;padding:6px 10px;border-radius:2px;margin-bottom:6px">
+      ${["Preocupação excessiva","Tensão muscular","Insônia","Pensamentos acelerados","Pânico"].map(i=>`<span style="font-size:8.5pt">☐ ${i}</span>`).join("")}
+    </div>
+    <div style="font-weight:600;font-size:9pt;color:#2E86C1;margin:6px 0 4px">TOC</div>
+    <table>
+      ${docRow("Presença de obsessões?", "☐ Sim  ☐ Não")}
+      ${docRow("Tipos de obsessões", "")}
+      ${docRow("Compulsões?", "☐ Sim  ☐ Não")}
+      ${docRow("Tempo consumido por dia", "")}
+      ${docRow("Insight", "☐ Bom  ☐ Razoável  ☐ Pobre  ☐ Ausente")}
+    </table>
+    <div style="font-weight:600;font-size:9pt;color:#2E86C1;margin:6px 0 4px">Altas Habilidades / Superdotação</div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px 18px;background:#EAF2FF;padding:6px 10px;border-radius:2px;margin-bottom:6px">
+      ${["Aprendizado acelerado","Criatividade elevada","Tédio com baixa estimulação","Multipotencialidade","Perfeccionismo"].map(i=>`<span style="font-size:8.5pt">☐ ${i}</span>`).join("")}
+    </div>
+    <div class="sec">4. História do Desenvolvimento</div>
+    ${docField("Gestação", 2)}${docField("Parto", 2)}${docField("Marcos do desenvolvimento", 3)}${docField("Atrasos?", 2)}
+    <div class="sec">5. História Escolar</div>
+    ${docField("Desempenho", 2)}${docField("Dificuldades", 2)}${docField("Destaques acadêmicos", 2)}
+    <div class="sec">6. História Ocupacional</div>
+    ${docField("Profissão atual", 1)}${docField("Dificuldades funcionais", 2)}${docField("Histórico laboral", 2)}
+    <div class="sec">7. Memória e Cognição</div>
+    ${docField("Queixas cognitivas", 3)}
+    <div class="sec">8. Humor / Psiquiatria</div>
+    ${docField("Diagnósticos prévios", 2)}${docField("Internações", 2)}${docField("Psicoterapia", 2)}
+    <div class="sec">9. Sono</div>
+    <table>
+      ${docRow("Qualidade do sono", "☐ Boa  ☐ Regular  ☐ Ruim  ☐ Péssima")}
+      ${docRow("Horários", "")}
+      ${docRow("Sonolência diurna", "☐ Sim  ☐ Não  ☐ Às vezes")}
+    </table>
+    <div class="sec">10. Substâncias / Medicações</div>
+    ${docField("Cafeína", 1)}${docField("Álcool", 1)}${docField("Outras substâncias", 2)}${docField("Medicações atuais", 2)}
+    <div class="sec">11. Histórico Médico</div>
+    ${docField("Condições clínicas relevantes", 3)}
+    <div class="sec">12. Histórico Familiar</div>
+    ${docField("Neurodesenvolvimento / psiquiatria na família", 3)}
+    <div class="sec">13. Funcionamento Social e Relacionamentos</div>
+    ${docField("Observações", 3)}
+    <div class="sec">14. Triagem Diferencial</div>
+    ${docField("TOC × TDAH", 2)}${docField("TDAH × Ansiedade", 2)}${docField("Altas Habilidades × TDAH", 2)}${docField("Altas Habilidades × TOC", 2)}
+    <div class="sec">15. Risco Clínico</div>
+    ${docField("Ideação suicida", 2)}${docField("Automutilação", 2)}
+    <div class="sec">16. Observação Clínica do Examinador</div>
+    ${docField("Aparência", 2)}${docField("Humor", 1)}${docField("Afeto", 1)}${docField("Fala", 2)}
+    <table>
+      ${docRow("Insight", "☐ Preservado  ☐ Parcialmente preservado  ☐ Prejudicado  ☐ Ausente")}
+      ${docRow("Julgamento", "☐ Preservado  ☐ Parcialmente preservado  ☐ Prejudicado  ☐ Ausente")}
+    </table>
+    <div class="sec">17. Expectativas do Paciente</div>
+    ${docField("Expectativas", 3)}
+    <div class="sec">18. Hipóteses Clínicas Iniciais <span style="font-size:8pt;font-weight:400;color:#c0392b">⚠ uso profissional restrito</span></div>
+    ${docField("Hipóteses clínicas iniciais", 4)}${docField("Conduta proposta", 3)}
+    <div class="sign-area">
+      <div class="sign-box">_________________________________<br>${PROF.nome}<br>${PROF.crp}</div>
+    </div>
+    <div class="foot">Documento clínico confidencial · LGPD · ${today}</div>`;
+
+  // ── TCLE ──
   if (tipo === "tcle") return `
     ${docHeader("TERMO DE CONSENTIMENTO LIVRE E ESCLARECIDO – TCLE", n)}
     <div class="sec">Identificação</div>
@@ -1135,14 +1331,15 @@ function gerarDocHTML(tipo, p) {
       <div class="sign-box">_________________________________<br>Paciente / Responsável Legal<br>${n}</div>
       <div class="sign-box">_________________________________<br>${PROF.nome}<br>${PROF.crp}</div>
     </div>
-    <div class="foot">Fortaleza – CE · ${today} · Documento gerado pelo Sistema Clínico ${PROF.nome}</div>`;
+    <div class="foot">Fortaleza – CE · ${today}</div>`;
 
+  // ── CONTRATO ──
   if (tipo === "contrato") return `
     ${docHeader("CONTRATO DE PRESTAÇÃO DE SERVIÇOS PSICOLÓGICOS", n)}
     <div class="sec">Partes</div>
     <table>
-      ${docRow("Contratada (Profissional)", PROF.nome + " · " + PROF.crp)}
-      ${docRow("Contratante (Paciente/Responsável)", n)}
+      ${docRow("Contratada", PROF.nome + " · " + PROF.crp)}
+      ${docRow("Contratante", n)}
       ${docRow("CPF do contratante", "")}
       ${docRow("Telefone", tel)}
       ${docRow("Data de início", today)}
@@ -1150,15 +1347,15 @@ function gerarDocHTML(tipo, p) {
     <div class="sec">Serviços e Honorários</div>
     <table>
       ${docRow("Tipo de serviço", p.tipo_atendimento || "Avaliação Neuropsicológica")}
-      ${docRow("Valor total do pacote", "R$ 3.500,00")}
-      ${docRow("Desconto PIX (5%)", "R$ 3.325,00")}
+      ${docRow("Valor total do pacote", fmtMoeda(3500))}
+      ${docRow("PIX com desconto (5%)", fmtMoeda(3325))}
       ${docRow("Parcelamento cartão", "Até 3x sem juros")}
       ${docRow("Forma de pagamento acordada", "")}
       ${docRow("Data de vencimento", "")}
     </table>
-    <div class="sec">Cancelamentos e Faltas</div>
-    <p>• Cancelamentos devem ser comunicados com mínimo de <strong>24 horas</strong> de antecedência.</p>
-    <p>• Atrasos do(a) paciente não implicam extensão do horário da sessão.</p>
+    <div class="sec">Regras e Cancelamento</div>
+    <p>• Cancelamentos com mínimo de <strong>24 horas</strong> de antecedência.</p>
+    <p>• Atrasos não implicam extensão do horário.</p>
     <p>• Faltas sem aviso prévio poderão implicar cobrança do horário reservado.</p>
     <div class="sec">Confidencialidade</div>
     <p>Todas as informações são protegidas pelo sigilo profissional, conforme o Código de Ética do Psicólogo e a LGPD.</p>
@@ -1168,6 +1365,7 @@ function gerarDocHTML(tipo, p) {
     </div>
     <div class="foot">Fortaleza – CE · ${today}</div>`;
 
+  // ── ACORDO ──
   if (tipo === "acordo") return `
     ${docHeader("ACORDO DE PRESTAÇÃO DE SERVIÇOS EM AVALIAÇÃO NEUROPSICOLÓGICA PRESENCIAL", n)}
     <p style="margin-bottom:12px">Este documento formaliza o acordo para a prestação de serviços psicológicos na modalidade de avaliação neuropsicológica presencial, estabelecendo condições técnicas, éticas, financeiras e operacionais para a adequada condução do processo avaliativo.</p>
@@ -1175,26 +1373,14 @@ function gerarDocHTML(tipo, p) {
     <p>A avaliação neuropsicológica consiste em processo técnico-científico especializado destinado à investigação do funcionamento cognitivo, comportamental, emocional e executivo, por meio de entrevista clínica, observação comportamental, análise documental e aplicação de instrumentos psicológicos e neuropsicológicos tecnicamente indicados.</p>
     <p>Não há garantia prévia de confirmação diagnóstica específica, uma vez que as conclusões dependerão da integração técnica dos dados obtidos.</p>
     <div class="sec">2. Modalidade Presencial</div>
-    <ul>
-      <li>Comparecimento pontual aos horários agendados;</li>
-      <li>Comunicação prévia de condições clínicas relevantes e uso de medicações;</li>
-      <li>Entrega de documentos clínicos/escolares quando solicitados;</li>
-      <li>Participação de responsável legal quando tecnicamente necessário.</li>
-    </ul>
+    <ul><li>Comparecimento pontual aos horários agendados;</li><li>Comunicação prévia de condições clínicas relevantes e uso de medicações;</li><li>Entrega de documentos clínicos/escolares quando solicitados;</li><li>Participação de responsável legal quando tecnicamente necessário.</li></ul>
     <div class="sec">3. Estrutura do Processo</div>
     <p>O processo poderá incluir anamnese, entrevistas complementares, análise documental, aplicação de testes, escalas e inventários, observação clínica, integração dos resultados, devolutiva e elaboração de laudo neuropsicológico.</p>
     <div class="sec">4. Pontualidade, Cancelamentos e Faltas</div>
-    <ul>
-      <li>Atrasos do(a) avaliado(a) não implicam extensão do horário;</li>
-      <li>Cancelamentos/remarcações com antecedência mínima de 24 horas;</li>
-      <li>Faltas sem aviso prévio poderão implicar cobrança do horário reservado.</li>
-    </ul>
+    <ul><li>Atrasos do(a) avaliado(a) não implicam extensão do horário;</li><li>Cancelamentos/remarcações com antecedência mínima de 24 horas;</li><li>Faltas sem aviso prévio poderão implicar cobrança do horário reservado.</li></ul>
     <div class="sec">5. Honorários</div>
-    <p><strong>Valor total do pacote: R$ 3.500,00</strong></p>
-    <ul>
-      <li>À vista via Pix com 5% de desconto: <strong>R$ 3.325,00</strong></li>
-      <li>Parcelamento em até 3x no cartão de crédito.</li>
-    </ul>
+    <p><strong>Valor total do pacote: ${fmtMoeda(3500)}</strong></p>
+    <ul><li>À vista via Pix com 5% de desconto: <strong>${fmtMoeda(3325)}</strong></li><li>Parcelamento em até 3x no cartão de crédito.</li></ul>
     <p>O valor contempla entrevistas, aplicação dos instrumentos necessários, análise técnica, devolutiva clínica e laudo neuropsicológico.</p>
     <div class="sec">6. Laudo Neuropsicológico</div>
     <p>O laudo será elaborado com base exclusivamente nos dados obtidos durante a avaliação, observando critérios técnicos, científicos, éticos e normativas profissionais vigentes.</p>
@@ -1202,7 +1388,7 @@ function gerarDocHTML(tipo, p) {
     <p>As informações obtidas são protegidas pelo sigilo profissional, conforme Código de Ética Profissional do Psicólogo e legislação aplicável.</p>
     <div class="sec">8. Consentimento</div>
     <p>Ao firmar este acordo, o(a) paciente/avaliado(a) ou responsável legal declara compreender a natureza da avaliação, seus objetivos, limitações e condições financeiras.</p>
-    <table style="margin-top:16px">
+    <table style="margin-top:12px">
       ${docRow("Paciente / Avaliado(a)", n)}
       ${docRow("Responsável Legal (se aplicável)", "")}
       ${docRow("CPF", "")}
@@ -1210,35 +1396,41 @@ function gerarDocHTML(tipo, p) {
     </table>
     <div class="sign-area">
       <div class="sign-box">_________________________________<br>Assinatura do(a) paciente/responsável</div>
-      <div class="sign-box">_________________________________<br>${PROF.nome} · ${PROF.crp}<br>Assinatura da profissional</div>
+      <div class="sign-box">_________________________________<br>${PROF.nome} · ${PROF.crp}</div>
     </div>
     <div class="foot">Fortaleza – CE · ${today}</div>`;
 
-  if (tipo === "recibo") return `
+  // ── RECIBO ──
+  if (tipo === "recibo") {
+    const num = p._reciboNum || "01";
+    const valorRecibo = p._valorRecibo || "";
+    return `
     ${docHeader("RECIBO DE PAGAMENTO", n)}
+    <div style="text-align:right;font-size:9pt;margin-bottom:8px"><strong>Recibo Nº ${String(n).replace(/\s.*/,"").toUpperCase()}-${num}</strong></div>
     <div class="sec">Dados do Recibo</div>
     <table>
-      ${docRow("Recibo nº", "")}
+      ${docRow("Recibo nº", String(n).replace(/\s.*/,"").toUpperCase()+"-"+num)}
       ${docRow("Data", today)}
       ${docRow("Paciente / Pagante", n)}
       ${docRow("CPF", "")}
       ${docRow("Referente a", p.tipo_atendimento || "Avaliação Neuropsicológica")}
       ${docRow("Sessão / Parcela nº", "")}
-      ${docRow("Valor recebido (R$)", "")}
       ${docRow("Forma de pagamento", "")}
     </table>
-    <div style="background:#EBF5FB;border:1px solid #AED6F1;border-radius:4px;padding:14px;margin:16px 0;text-align:center;">
-      <div style="font-size:9pt;color:#555;margin-bottom:4px">Recebi a importância de</div>
-      <div style="font-size:16pt;font-weight:700;color:#1B4F72">R$ ___________________</div>
-      <div style="font-size:8.5pt;color:#555;margin-top:4px">( ________________________________________ reais )</div>
+    <div style="background:#EBF5FB;border:1px solid #AED6F1;border-radius:4px;padding:16px;margin:14px 0;text-align:center;">
+      <div style="font-size:8.5pt;color:#555;margin-bottom:6px">Recebi a importância de</div>
+      <div style="font-size:18pt;font-weight:700;color:#1B4F72">${valorRecibo ? fmtMoeda(valorRecibo) : "R$ ___________________"}</div>
+      ${valorRecibo ? `<div style="font-size:9pt;color:#555;margin-top:4px">(${numExtenso(valorRecibo)})</div>` : `<div style="font-size:8.5pt;color:#555;margin-top:4px">( ________________________________________ reais )</div>`}
     </div>
     <p style="font-size:8.5pt;color:#555">Referente à prestação de serviços psicológicos de <strong>${p.tipo_atendimento || "Avaliação Neuropsicológica"}</strong> ao(à) paciente <strong>${n}</strong>.</p>
     <div class="sign-area">
       <div class="sign-box">_________________________________<br>Pagante<br>${n}</div>
       <div class="sign-box">_________________________________<br>${PROF.nome}<br>${PROF.crp}</div>
     </div>
-    <div class="foot">Fortaleza – CE · ${today} · Este recibo é válido como comprovante de pagamento</div>`;
+    <div class="foot">Fortaleza – CE · ${today} · Recibo Nº ${String(n).replace(/\s.*/,"").toUpperCase()}-${num} · Válido como comprovante de pagamento</div>`;
+  }
 
+  // ── EVOLUÇÃO ──
   if (tipo === "evolucao") return `
     ${docHeader("EVOLUÇÃO DE SESSÃO", n)}
     <div class="sec">Dados da Sessão</div>
@@ -1247,7 +1439,7 @@ function gerarDocHTML(tipo, p) {
       ${docRow("Data da sessão", "")}
       ${docRow("Nº da sessão", "")}
       ${docRow("Duração", "")}
-      ${docRow("Modalidade", "")}
+      ${docRow("Modalidade", "☐ Presencial  ☐ Online")}
     </table>
     <div class="sec">Conteúdo da Sessão</div>
     ${docField("Queixa / demanda trazida hoje", 3)}
@@ -1265,37 +1457,60 @@ function gerarDocHTML(tipo, p) {
     </div>
     <div class="foot">Documento clínico confidencial · LGPD · ${today}</div>`;
 
-  if (tipo === "laudo") return `
-    ${docHeader("LAUDO NEUROPSICOLÓGICO", n)}
+  // ── LAUDOS ──
+  const laudoTipos = {
+    "laudo": "LAUDO NEUROPSICOLÓGICO",
+    "laudo-tdah": "LAUDO NEUROPSICOLÓGICO – TDAH",
+    "laudo-tea": "LAUDO NEUROPSICOLÓGICO – TRANSTORNO DO ESPECTRO AUTISTA (TEA)",
+    "laudo-dislexia": "LAUDO NEUROPSICOLÓGICO – DISLEXIA E TRANSTORNOS DE APRENDIZAGEM",
+    "laudo-altas": "LAUDO NEUROPSICOLÓGICO – ALTAS HABILIDADES / SUPERDOTAÇÃO",
+    "laudo-ansiedade": "LAUDO PSICOLÓGICO – TRANSTORNO DE ANSIEDADE",
+    "laudo-toc": "LAUDO PSICOLÓGICO – TRANSTORNO OBSESSIVO-COMPULSIVO (TOC)",
+    "laudo-depressao": "LAUDO PSICOLÓGICO – TRANSTORNO DEPRESSIVO",
+    "laudo-inss": "LAUDO PSICOLÓGICO – PERÍCIA / INSS",
+    "laudo-juridico": "LAUDO PSICOLÓGICO – USO JURÍDICO / JUDICIAL",
+    "laudo-escola": "RELATÓRIO NEUROPSICOLÓGICO – USO ESCOLAR",
+  };
+  const laudoTitulo = laudoTipos[tipo] || "LAUDO NEUROPSICOLÓGICO";
+  if (tipo.startsWith("laudo") || tipo === "laudo") return `
+    ${docHeader(laudoTitulo, n)}
     <div class="sec">Dados de Identificação</div>
     <table>
       ${docRow("Paciente", n)}
       ${docRow("Data de nascimento", nasc)}
       ${docRow("Idade", "")}
       ${docRow("Escolaridade", "")}
-      ${docRow("Profissão", "")}
+      ${docRow("Profissão / Série escolar", "")}
+      ${docRow("Responsável legal (se menor)", "")}
       ${docRow("Data do laudo", today)}
       ${docRow("Finalidade do laudo", "")}
       ${docRow("Destinatário", "")}
     </table>
-    <div class="sec">Método</div>
+    <div class="sec">Método de Avaliação</div>
     ${docField("Período de avaliação", 1)}
-    ${docField("Número de sessões", 1)}
-    ${docField("Instrumentos utilizados", 4)}
-    ${docField("Fontes de informação", 2)}
-    <div class="sec">Histórico Clínico e Queixa</div>
-    ${docField("Queixa principal e histórico", 5)}
+    ${docField("Número de sessões realizadas", 1)}
+    ${docField("Instrumentos e técnicas utilizados", 5)}
+    ${docField("Fontes de informação consultadas", 2)}
+    <div class="sec">Histórico Clínico e Queixa Principal</div>
+    ${docField("Descrição do histórico clínico e queixa apresentada", 6)}
+    <div class="sec">Comportamento Durante a Avaliação</div>
+    ${docField("Aspectos comportamentais e relacionais observados nas sessões", 4)}
     <div class="sec">Resultados e Análise</div>
-    ${docField("Resultados dos instrumentos aplicados", 8)}
-    <div class="sec">Aspectos Comportamentais Observados</div>
-    ${docField("Observações clínicas", 4)}
-    <div class="sec">Conclusão</div>
-    ${docField("Síntese diagnóstica", 4)}
-    ${docField("CID-11 / DSM-5 (se aplicável)", 1)}
-    ${docField("Recomendações", 3)}
-    ${docField("Encaminhamentos", 2)}
+    ${docField("Inteligência e funções cognitivas gerais", 4)}
+    ${docField("Atenção, concentração e funções executivas", 4)}
+    ${docField("Memória (operacional, episódica, semântica)", 4)}
+    ${docField("Linguagem e habilidades acadêmicas", 3)}
+    ${docField("Aspectos emocionais e comportamentais", 3)}
+    ${docField("Habilidades sociais e adaptativas", 2)}
+    <div class="sec">Síntese Diagnóstica e Conclusão</div>
+    ${docField("Síntese integrativa dos achados", 5)}
+    ${docField("Hipótese / Conclusão diagnóstica", 2)}
+    ${docField("Classificação (CID-11 / DSM-5 – se aplicável)", 1)}
+    <div class="sec">Recomendações e Encaminhamentos</div>
+    ${docField("Recomendações para o paciente / família / escola", 4)}
+    ${docField("Encaminhamentos sugeridos", 2)}
     <div class="sign-area">
-      <div class="sign-box">_________________________________<br>${PROF.nome}<br>${PROF.crp}</div>
+      <div class="sign-box">_________________________________<br>${PROF.nome}<br>${PROF.crp}<br>${PROF.titulo}</div>
     </div>
     <div class="foot">Documento clínico confidencial · Uso restrito · LGPD · ${today}</div>`;
 
@@ -1303,12 +1518,9 @@ function gerarDocHTML(tipo, p) {
     ${docHeader("RELATÓRIO PSICOLÓGICO", n)}
     <div class="sec">Dados de Identificação</div>
     <table>
-      ${docRow("Paciente", n)}
-      ${docRow("Data de nascimento", nasc)}
-      ${docRow("Data do relatório", today)}
-      ${docRow("Tipo de relatório", "")}
-      ${docRow("Destinatário", "")}
-      ${docRow("Finalidade", "")}
+      ${docRow("Paciente", n)}${docRow("Data de nascimento", nasc)}
+      ${docRow("Data do relatório", today)}${docRow("Tipo de relatório", "")}
+      ${docRow("Destinatário", "")}${docRow("Finalidade", "")}
     </table>
     <div class="sec">Introdução</div>
     ${docField("Apresentação do caso e contexto de encaminhamento", 4)}
@@ -1327,11 +1539,8 @@ function gerarDocHTML(tipo, p) {
     ${docHeader("DECLARAÇÃO", n)}
     <div class="sec">Dados</div>
     <table>
-      ${docRow("Paciente", n)}
-      ${docRow("Data de nascimento", nasc)}
-      ${docRow("Tipo de declaração", "")}
-      ${docRow("Destinatário", "")}
-      ${docRow("Data", today)}
+      ${docRow("Paciente", n)}${docRow("Data de nascimento", nasc)}
+      ${docRow("Tipo de declaração", "")}${docRow("Destinatário", "")}${docRow("Data", today)}
     </table>
     <div class="sec">Conteúdo</div>
     ${docField("Declaro que o(a) paciente acima identificado(a):", 6)}
@@ -1340,19 +1549,15 @@ function gerarDocHTML(tipo, p) {
     </div>
     <div class="foot">Fortaleza – CE · ${today}</div>`;
 
-  // Default - anamnese/geral
+  // DEFAULT
   return `
     ${docHeader("FICHA DO PACIENTE", n)}
     <div class="sec">Identificação</div>
     <table>
-      ${docRow("Nome completo", n)}
-      ${docRow("Data de nascimento", nasc)}
-      ${docRow("Telefone", tel)}
-      ${docRow("E-mail", p.email||"—")}
-      ${docRow("Sexo", p.sexo||"—")}
-      ${docRow("Tipo de atendimento", p.tipo_atendimento||"—")}
-      ${docRow("Encaminhamento", p.encaminhamento||"—")}
-      ${docRow("Status", labelStatus(p.status))}
+      ${docRow("Nome completo", n)}${docRow("Data de nascimento", nasc)}
+      ${docRow("Telefone", tel)}${docRow("E-mail", p.email||"—")}
+      ${docRow("Sexo", p.sexo||"—")}${docRow("Tipo de atendimento", p.tipo_atendimento||"—")}
+      ${docRow("Encaminhamento", p.encaminhamento||"—")}${docRow("Status", labelStatus(p.status))}
     </table>
     ${docField("Observações", 4)}
     <div class="sign-area">
@@ -1363,6 +1568,7 @@ function gerarDocHTML(tipo, p) {
 function exportarDocPaciente(tipo) {
   const p = currentPaciente;
   if (tipo === "programacao") { exportarProgDoc(p); return; }
+  if (tipo === "recibo") { abrirModalRecibo(p); return; }
   logAudit("exportar", "documentos", `Documento "${tipo}" exportado para paciente: ${p.nome}`);
   const docContent = gerarDocHTML(tipo, p);
   const labels = {tcle:"TCLE",contrato:"Contrato",acordo:"Acordo de Serviços",recibo:"Recibo",evolucao:"Evolução",laudo:"Laudo",relatorio:"Relatório",declaracao:"Declaração",anamnese:"Ficha do Paciente"};
@@ -1696,11 +1902,13 @@ window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); e.prom
 // ── BOOT ──
 // ── PHONE MASK ──
 function maskPhone(input) {
-  let v = input.value.replace(/\D/g, "");
+  let v = input.value.replace(/[^\d]/g, "");
   if (v.length <= 10) {
-    v = v.replace(/^(\d{2})(\d{4})(\d{0,4})/, "$1- $2-$3");
+    v = v.replace(/^(\d{0,2})(\d{0,4})(\d{0,4})/, (_, a, b, c) =>
+      [a && `(${a}`, b && `) ${b}`, c && `-${c}`].filter(Boolean).join(""));
   } else {
-    v = v.replace(/^(\d{2})(\d{1})(\d{4})(\d{0,4})/, "$1- $2 $3-$4");
+    v = v.replace(/^(\d{0,2})(\d{0,1})(\d{0,4})(\d{0,4})/, (_, a, b, c, d) =>
+      [a && `(${a})`, b && ` ${b}`, c && ` ${c}`, d && `-${d}`].filter(Boolean).join(""));
   }
   input.value = v;
 }
@@ -1843,6 +2051,111 @@ async function salvarPagamento(pacId) {
     logAudit("criar", "financeiro", `Pagamento de R$ ${valor} registrado`);
     showPacTab("financeiro");
   } catch(e) { showToast("Execute o SQL de pagamentos no Supabase primeiro.", "error"); }
+}
+
+// ── RECIBO MODAL ──
+async function abrirModalRecibo(p) {
+  // Get next recibo number for this patient
+  let nextNum = "01";
+  try {
+    const recibos = await sbFetch(`recibos?paciente_id=eq.${p.id}&select=numero&order=numero.desc&limit=1`) || [];
+    if (recibos.length > 0) {
+      nextNum = String(parseInt(recibos[0].numero || "0") + 1).padStart(2, "0");
+    }
+  } catch(e) {}
+
+  const existing = document.getElementById("reciboModal");
+  if (existing) existing.remove();
+  const modal = document.createElement("div");
+  modal.id = "reciboModal";
+  modal.className = "modal-overlay open";
+  modal.innerHTML = `
+    <div class="modal" style="max-width:480px">
+      <div class="modal-head"><div class="modal-title">🧾 Gerar Recibo</div><button class="modal-close" onclick="document.getElementById('reciboModal').remove()">✕</button></div>
+      <div class="modal-body">
+        <div class="frow">
+          <div class="fg"><div class="flabel">Nº do Recibo</div><input class="finput" id="reciboNum" value="${nextNum}" style="font-size:18px;font-weight:700;text-align:center"/></div>
+          <div class="fg"><div class="flabel">Data</div><input class="finput" type="date" id="reciboData" value="${new Date().toISOString().split('T')[0]}"/></div>
+        </div>
+        <div class="fg"><div class="flabel">Valor (R$)</div><input class="finput" type="number" id="reciboValor" placeholder="0.00" step="0.01" oninput="atualizarExtenso(this)"/></div>
+        <div id="reciboExtenso" style="font-size:10px;color:var(--gold);margin-top:4px;font-style:italic"></div>
+        <div class="fg"><div class="flabel">Referente a / Parcela</div><input class="finput" id="reciboRef" placeholder="Ex: 1ª parcela da avaliação neuropsicológica"/></div>
+        <div class="fg"><div class="flabel">Forma de pagamento</div>
+          <select class="fselect" id="reciboForma"><option>PIX</option><option>Cartão de crédito</option><option>Cartão de débito</option><option>Dinheiro</option><option>Transferência</option></select>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-secondary" onclick="document.getElementById('reciboModal').remove()">Cancelar</button>
+        <button class="btn-primary" onclick="gerarESalvarRecibo('${p.id}')">Gerar e Salvar Recibo</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+function atualizarExtenso(input) {
+  const v = parseFloat(input.value);
+  const el = document.getElementById("reciboExtenso");
+  if (el && !isNaN(v) && v > 0) el.textContent = `(${numExtenso(v)})`;
+  else if (el) el.textContent = "";
+}
+
+async function gerarESalvarRecibo(pacId) {
+  const num = document.getElementById("reciboNum").value;
+  const valor = document.getElementById("reciboValor").value;
+  const forma = document.getElementById("reciboForma").value;
+  const ref = document.getElementById("reciboRef").value;
+  const data = document.getElementById("reciboData").value;
+  if (!valor) { showToast("Digite o valor do recibo!", "error"); return; }
+  const p = {...currentPaciente, _reciboNum: num, _valorRecibo: valor};
+  // Save to DB
+  try {
+    await sbFetch("recibos", { method:"POST", body: JSON.stringify({
+      paciente_id: pacId, numero: num, valor: parseFloat(valor),
+      forma_pagamento: forma, descricao: ref, data_recibo: data
+    })});
+  } catch(e) { /* table may not exist yet, continue with print */ }
+  document.getElementById("reciboModal")?.remove();
+  logAudit("exportar", "documentos", `Recibo Nº ${num} gerado para ${currentPaciente?.nome}`);
+  const docContent = gerarDocHTML("recibo", p);
+  const win = window.open("","_blank");
+  if (!win) { showToast("Permita pop-ups.", "error"); return; }
+  win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Recibo – ${p.nome}</title>
+    <style>${docStyles()}</style><script>window.onload=function(){window.print();}<\/script>
+    </head><body>${docContent}</body></html>`);
+  win.document.close();
+}
+
+// ── EDITAR SESSÃO PROGRAMAÇÃO ──
+async function editarSessaoProg(progId, idx, dataAtual, descAtual) {
+  const novaData = prompt("Nova data da sessão:", dataAtual);
+  if (!novaData) return;
+  const novaDesc = prompt("Descrição da sessão:", descAtual);
+  try {
+    const progs = await sbFetch(`programacoes?id=eq.${progId}&select=sessoes`) || [];
+    if (!progs.length) return;
+    const sessoes = JSON.parse(progs[0].sessoes || "[]");
+    sessoes[idx].data = novaData;
+    if (novaDesc) sessoes[idx].descricao = novaDesc;
+    await sbFetch(`programacoes?id=eq.${progId}`, { method:"PATCH", body: JSON.stringify({sessoes: JSON.stringify(sessoes)}), prefer:"return=minimal"});
+    showToast("Sessão atualizada!", "success");
+    loadProgPaciente(document.getElementById("pacTabContent"), currentPaciente.id);
+  } catch(e) { showToast("Erro ao atualizar sessão.", "error"); }
+}
+
+async function excluirSessaoProg(progId, idx) {
+  if (!confirm("Excluir esta sessão da programação?")) return;
+  try {
+    const progs = await sbFetch(`programacoes?id=eq.${progId}&select=sessoes`) || [];
+    if (!progs.length) return;
+    const sessoes = JSON.parse(progs[0].sessoes || "[]");
+    sessoes.splice(idx, 1);
+    // Renumber
+    let num = 1;
+    sessoes.forEach(s => { if (!s.skip) { s.num = num; num++; } });
+    await sbFetch(`programacoes?id=eq.${progId}`, { method:"PATCH", body: JSON.stringify({sessoes: JSON.stringify(sessoes)}), prefer:"return=minimal"});
+    showToast("Sessão excluída!", "success");
+    loadProgPaciente(document.getElementById("pacTabContent"), currentPaciente.id);
+  } catch(e) { showToast("Erro ao excluir sessão.", "error"); }
 }
 
 // ── WHATSAPP LEMBRETE ──
