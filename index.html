@@ -312,15 +312,19 @@ body { font-family: 'JetBrains Mono', monospace; background: var(--bg); color: v
     <div class="fg"><div class="flabel">Senha</div>
       <div class="pass-wrap"><input class="finput" type="password" id="regPass" placeholder="Mínimo 6 caracteres"/>
       <button class="pass-toggle" type="button" onclick="togglePass('regPass',this)" tabindex="-1">👁️</button></div></div>
-    <div class="fg"><div class="flabel">Perfil</div>
+    <div class="fg"><div class="flabel">Perfil solicitado</div>
       <select class="fselect" id="regPerfil">
+        <option value="visualizar">Visualizar apenas</option>
+        <option value="assistente">Assistente (cadastrar pacientes e agenda)</option>
         <option value="admin">Administrador (acesso total)</option>
-        <option value="assistente">Assistente (acesso limitado)</option>
       </select>
+    </div>
+    <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:4px;padding:10px 12px;font-size:10px;color:var(--text3);margin-bottom:8px;">
+      ⚠️ Após o cadastro, uma solicitação de liberação será enviada para o administrador. Aguarde a aprovação antes de usar o sistema.
     </div>
     <div style="display:flex;gap:10px;margin-top:8px;">
       <button class="btn-secondary" style="flex:1" onclick="showScreen('loginScreen')">Voltar</button>
-      <button class="btn-primary" style="flex:1" onclick="doRegister()">Criar conta</button>
+      <button class="btn-primary" style="flex:1" onclick="doRegister()">Solicitar acesso</button>
     </div>
     <div class="login-err" id="regErr"></div>
   </div>
@@ -537,7 +541,7 @@ body { font-family: 'JetBrains Mono', monospace; background: var(--bg); color: v
         <div class="fg"><div class="flabel">Data de nascimento</div><input class="finput" type="date" id="pacNasc"/></div>
       </div>
       <div class="frow">
-        <div class="fg"><div class="flabel">Telefone</div><input class="finput" type="tel" id="pacTel" placeholder="(00) 00000-0000"/></div>
+        <div class="fg"><div class="flabel">Telefone</div><input class="finput" type="tel" id="pacTel" placeholder="88- 9 9214-8745" oninput="maskPhone(this)"/></div>
         <div class="fg"><div class="flabel">E-mail</div><input class="finput" type="email" id="pacEmail" placeholder="email@exemplo.com"/></div>
       </div>
       <div class="frow">
@@ -582,6 +586,9 @@ body { font-family: 'JetBrains Mono', monospace; background: var(--bg); color: v
         <select class="fselect" id="agendModal"><option>Presencial</option><option>Online</option></select>
       </div>
       <div class="fg"><div class="flabel">Observações</div><textarea class="ftextarea" id="agendObs" placeholder="Observações sobre a sessão..."></textarea></div>
+      <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:4px;padding:10px 12px;font-size:10px;color:var(--text3)">
+        🔔 Lembrete automático será enviado para <strong style="color:var(--gold)">Eveline.psi44@yahoo.com</strong> 2 horas antes da consulta
+      </div>
     </div>
     <div class="modal-foot">
       <button class="btn-secondary" onclick="closeModal('novoAgendModal')">Cancelar</button>
@@ -689,7 +696,11 @@ async function doRegister() {
   if (!nome || !email || !pass) { err.textContent = "Preencha todos os campos."; return; }
   try {
     await sbAuth("signup", { email, password: pass, data: { nome, perfil } });
-    showToast("Conta criada! Verifique seu e-mail.", "success");
+    // Send notification email to admin (via mailto as fallback)
+    const mailBody = encodeURIComponent(`Novo usuário solicitou acesso ao Sistema Clínico Eveline Mourão.\n\nNome: ${nome}\nE-mail: ${email}\nPerfil solicitado: ${perfil}\n\nAcesse o Supabase para aprovar ou rejeitar.`);
+    const mailSubject = encodeURIComponent(`[Sistema Clínico] Novo cadastro aguardando aprovação: ${nome}`);
+    window.open(`mailto:antoniofilhoveras@yahoo.com?subject=${mailSubject}&body=${mailBody}`);
+    showToast("Solicitação enviada! Aguarde a liberação do administrador.", "success");
     showScreen("loginScreen");
   } catch(e) { err.textContent = e.message; }
 }
@@ -860,16 +871,13 @@ function showPacTab(tab) {
       <button class="doc-btn" onclick="exportarDocPaciente('evolucao')"><div class="doc-btn-icon">📝</div><div class="doc-btn-label">Evolução</div></button>
       <button class="doc-btn" onclick="exportarDocPaciente('declaracao')"><div class="doc-btn-icon">📜</div><div class="doc-btn-label">Declaração</div></button>
       <button class="doc-btn" onclick="exportarDocPaciente('programacao')"><div class="doc-btn-icon">📅</div><div class="doc-btn-label">Programação</div></button>
+      <button class="doc-btn" onclick="exportarDocPaciente('recibo')"><div class="doc-btn-icon">🧾</div><div class="doc-btn-label">Recibo</div></button>
+      <button class="doc-btn" onclick="exportarDocPaciente('acordo')"><div class="doc-btn-icon">🤝</div><div class="doc-btn-label">Acordo de Serviços</div></button>
     </div>`;
   } else if (tab === "historico") {
     loadHistorico(c, p.id);
   } else if (tab === "financeiro") {
-    c.innerHTML = `
-      <div class="prog-card">
-        <div style="font-size:11px;color:var(--text3);margin-bottom:12px">Informações financeiras do paciente</div>
-        ${infoRow("Tipo de atendimento", p.tipo_atendimento)}
-        ${infoRow("Status", labelStatus(p.status))}
-      </div>`;
+    loadFinanceiro(c, p);
   } else if (tab === "prog") {
     loadProgPaciente(c, p.id);
   }
@@ -883,7 +891,8 @@ async function loadHistorico(c, pacId) {
     c.innerHTML = ag.map(a => `
       <div class="agenda-item">
         <div class="agenda-date-box"><div class="agenda-day">${new Date(a.data + "T12:00:00").getDate()}</div><div class="agenda-month">${new Date(a.data + "T12:00:00").toLocaleString("pt-BR",{month:"short"})}</div></div>
-        <div class="agenda-info"><div class="agenda-pac">${a.tipo_sessao}</div><div class="agenda-hora">⏰ ${a.horario} · ${a.modalidade}</div><div class="agenda-tipo">${a.observacoes||""}</div></div>
+        <div class="agenda-info" style="flex:1"><div class="agenda-pac">${a.tipo_sessao}</div><div class="agenda-hora">⏰ ${a.horario} · ${a.modalidade}</div><div class="agenda-tipo">${a.observacoes||""}</div></div>
+        <button class="btn-icon" onclick="enviarWhatsApp('${currentPaciente?.nome||""}','${a.data}','${a.horario}','${a.tipo_sessao}')" title="Enviar lembrete WhatsApp" style="color:#25d366;border-color:#25d366;flex-shrink:0">📲</button>
       </div>`).join("");
   } catch(e) { c.innerHTML = `<div class="empty-state"><div class="empty-text">Erro ao carregar histórico</div></div>`; }
 }
@@ -911,10 +920,15 @@ async function loadAgenda() {
           <div class="agenda-day">${new Date(a.data + "T12:00:00").getDate()}</div>
           <div class="agenda-month">${new Date(a.data + "T12:00:00").toLocaleString("pt-BR",{month:"short"})}</div>
         </div>
-        <div class="agenda-info">
+        <div class="agenda-info" style="flex:1">
           <div class="agenda-pac">${a.pacientes?.nome || "—"}</div>
           <div class="agenda-hora">⏰ ${a.horario} · ${a.modalidade}</div>
           <div class="agenda-tipo">${a.tipo_sessao}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+          <button class="btn-icon" onclick="enviarWhatsApp('${a.pacientes?.nome||""}','${a.data}','${a.horario}','${a.tipo_sessao}')" title="Enviar lembrete WhatsApp" style="color:#25d366;border-color:#25d366">📲</button>
+          <button class="btn-icon" onclick="editarAgendamento('${a.id}','${a.paciente_id}','${a.data}','${a.horario}','${a.tipo_sessao}','${a.modalidade}')" title="Editar">✏️</button>
+          <button class="btn-icon" onclick="excluirAgendamento('${a.id}')" title="Excluir">🗑️</button>
         </div>
       </div>`).join("");
   } catch(e) { list.innerHTML = `<div class="empty-state"><div class="empty-text">Erro ao carregar agenda</div></div>`; }
@@ -1049,35 +1063,316 @@ async function loadUsuarios() {
 }
 
 // ── EXPORT ──
+function docStyles() {
+  return `@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600;700&family=Source+Sans+3:wght@400;600&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Source Sans 3',Arial,sans-serif;font-size:9.5pt;color:#1a1a2e;background:#fff;margin:1.8cm 2cm;}
+  @page{size:A4;margin:14mm 16mm;}
+  @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
+  .hdr{background:#1B4F72;color:#fff;padding:12px 16px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
+  .hdr h1{font-family:'Source Serif 4',serif;font-size:12pt;font-weight:700;}
+  .hdr p{font-size:7.5pt;color:#AED6F1;margin-top:2px;}
+  .hdr-r{text-align:right;font-size:8pt;color:#AED6F1;}
+  .sec{font-family:'Source Serif 4',serif;font-size:11pt;font-weight:700;color:#1B4F72;border-bottom:1.5px solid #2E86C1;padding-bottom:3px;margin:14px 0 8px;}
+  table{width:100%;border-collapse:collapse;margin-bottom:8px;}
+  .lc{width:35%;background:#EBF5FB;border:.5px solid #AED6F1;padding:5px 8px;font-weight:600;font-size:8pt;color:#1A5276;vertical-align:top;}
+  .vc{background:#FDFEFE;border:.5px solid #AED6F1;padding:5px 8px;font-size:8.5pt;vertical-align:top;min-height:28px;}
+  .field-line{border-bottom:1px solid #ccc;min-height:28px;margin-bottom:8px;padding-bottom:4px;}
+  .label{font-size:8pt;color:#555;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
+  .sign-area{display:flex;justify-content:space-between;margin-top:30px;gap:20px;}
+  .sign-box{flex:1;border-top:1px solid #333;padding-top:6px;font-size:8pt;color:#555;text-align:center;}
+  .foot{margin-top:20px;border-top:.5px solid #ccc;padding-top:6px;font-size:7.5pt;color:#777;text-align:center;}
+  p{line-height:1.7;margin-bottom:8px;}
+  ol,ul{margin-left:20px;margin-bottom:8px;line-height:1.7;}`;
+}
+
+function docHeader(titulo, pacNome) {
+  const today = new Date().toLocaleDateString("pt-BR");
+  return `<div class="hdr">
+    <div>
+      <h1>${PROF.nome} · ${PROF.crp}</h1>
+      <p>${titulo}${pacNome ? " · Paciente: "+pacNome : ""}</p>
+    </div>
+    <div class="hdr-r">Data: ${today}</div>
+  </div>`;
+}
+
+function docRow(label, value) {
+  return `<tr><td class="lc">${label}</td><td class="vc">${value||"&nbsp;"}</td></tr>`;
+}
+function docField(label, lines=1) {
+  let h = lines > 1 ? `style="min-height:${lines*24}px"` : "";
+  return `<div class="label">${label}</div><div class="field-line" ${h}></div>`;
+}
+
+function gerarDocHTML(tipo, p) {
+  const n = p.nome || "Paciente";
+  const tel = p.telefone || "—";
+  const nasc = formatDate(p.data_nascimento);
+  const today = new Date().toLocaleDateString("pt-BR");
+
+  if (tipo === "tcle") return `
+    ${docHeader("TERMO DE CONSENTIMENTO LIVRE E ESCLARECIDO – TCLE", n)}
+    <div class="sec">Identificação</div>
+    <table>
+      ${docRow("Paciente / Participante", n)}
+      ${docRow("Data de nascimento", nasc)}
+      ${docRow("Responsável legal (se aplicável)", "")}
+      ${docRow("Data", today)}
+    </table>
+    <div class="sec">Informações sobre a Avaliação</div>
+    <p>Você está sendo convidado(a) a participar de um processo de <strong>Avaliação Neuropsicológica</strong>, conduzido pela Psicóloga <strong>${PROF.nome}</strong>, ${PROF.crp}.</p>
+    <p><strong>Objetivos:</strong> Investigar o funcionamento cognitivo, emocional, comportamental e executivo por meio de entrevistas, observação clínica e aplicação de instrumentos psicológicos padronizados.</p>
+    <p><strong>Procedimentos:</strong> Serão realizadas sessões presenciais com duração média de 50 a 90 minutos, envolvendo entrevistas, testes cognitivos, escalas e inventários.</p>
+    <p><strong>Benefícios esperados:</strong> Melhor compreensão do funcionamento neuropsicológico, orientações específicas e, quando indicado, elaboração de laudo psicológico.</p>
+    <p><strong>Riscos:</strong> A avaliação pode gerar cansaço ou desconforto durante as sessões, sendo sempre respeitados os limites do(a) avaliado(a).</p>
+    <p><strong>Confidencialidade:</strong> Todas as informações são protegidas pelo sigilo profissional, conforme o Código de Ética do Psicólogo e a LGPD (Lei 13.709/2018).</p>
+    <p><strong>Direito de desistir:</strong> A participação é voluntária. Você pode interromper o processo a qualquer momento, sem penalidades, comunicando previamente à profissional.</p>
+    <p><strong>Contato:</strong> Eveline.psi44@yahoo.com</p>
+    <div class="sec">Declaração de Consentimento</div>
+    <p>Declaro que li e compreendi as informações acima, tive oportunidade de esclarecer dúvidas e concordo em participar voluntariamente da avaliação neuropsicológica.</p>
+    <div class="sign-area">
+      <div class="sign-box">_________________________________<br>Paciente / Responsável Legal<br>${n}</div>
+      <div class="sign-box">_________________________________<br>${PROF.nome}<br>${PROF.crp}</div>
+    </div>
+    <div class="foot">Fortaleza – CE · ${today} · Documento gerado pelo Sistema Clínico ${PROF.nome}</div>`;
+
+  if (tipo === "contrato") return `
+    ${docHeader("CONTRATO DE PRESTAÇÃO DE SERVIÇOS PSICOLÓGICOS", n)}
+    <div class="sec">Partes</div>
+    <table>
+      ${docRow("Contratada (Profissional)", PROF.nome + " · " + PROF.crp)}
+      ${docRow("Contratante (Paciente/Responsável)", n)}
+      ${docRow("CPF do contratante", "")}
+      ${docRow("Telefone", tel)}
+      ${docRow("Data de início", today)}
+    </table>
+    <div class="sec">Serviços e Honorários</div>
+    <table>
+      ${docRow("Tipo de serviço", p.tipo_atendimento || "Avaliação Neuropsicológica")}
+      ${docRow("Valor total do pacote", "R$ 3.500,00")}
+      ${docRow("Desconto PIX (5%)", "R$ 3.325,00")}
+      ${docRow("Parcelamento cartão", "Até 3x sem juros")}
+      ${docRow("Forma de pagamento acordada", "")}
+      ${docRow("Data de vencimento", "")}
+    </table>
+    <div class="sec">Cancelamentos e Faltas</div>
+    <p>• Cancelamentos devem ser comunicados com mínimo de <strong>24 horas</strong> de antecedência.</p>
+    <p>• Atrasos do(a) paciente não implicam extensão do horário da sessão.</p>
+    <p>• Faltas sem aviso prévio poderão implicar cobrança do horário reservado.</p>
+    <div class="sec">Confidencialidade</div>
+    <p>Todas as informações são protegidas pelo sigilo profissional, conforme o Código de Ética do Psicólogo e a LGPD.</p>
+    <div class="sign-area">
+      <div class="sign-box">_________________________________<br>Contratante<br>${n}</div>
+      <div class="sign-box">_________________________________<br>${PROF.nome}<br>${PROF.crp}</div>
+    </div>
+    <div class="foot">Fortaleza – CE · ${today}</div>`;
+
+  if (tipo === "acordo") return `
+    ${docHeader("ACORDO DE PRESTAÇÃO DE SERVIÇOS EM AVALIAÇÃO NEUROPSICOLÓGICA PRESENCIAL", n)}
+    <p style="margin-bottom:12px">Este documento formaliza o acordo para a prestação de serviços psicológicos na modalidade de avaliação neuropsicológica presencial, estabelecendo condições técnicas, éticas, financeiras e operacionais para a adequada condução do processo avaliativo.</p>
+    <div class="sec">1. Natureza da Avaliação Neuropsicológica</div>
+    <p>A avaliação neuropsicológica consiste em processo técnico-científico especializado destinado à investigação do funcionamento cognitivo, comportamental, emocional e executivo, por meio de entrevista clínica, observação comportamental, análise documental e aplicação de instrumentos psicológicos e neuropsicológicos tecnicamente indicados.</p>
+    <p>Não há garantia prévia de confirmação diagnóstica específica, uma vez que as conclusões dependerão da integração técnica dos dados obtidos.</p>
+    <div class="sec">2. Modalidade Presencial</div>
+    <ul>
+      <li>Comparecimento pontual aos horários agendados;</li>
+      <li>Comunicação prévia de condições clínicas relevantes e uso de medicações;</li>
+      <li>Entrega de documentos clínicos/escolares quando solicitados;</li>
+      <li>Participação de responsável legal quando tecnicamente necessário.</li>
+    </ul>
+    <div class="sec">3. Estrutura do Processo</div>
+    <p>O processo poderá incluir anamnese, entrevistas complementares, análise documental, aplicação de testes, escalas e inventários, observação clínica, integração dos resultados, devolutiva e elaboração de laudo neuropsicológico.</p>
+    <div class="sec">4. Pontualidade, Cancelamentos e Faltas</div>
+    <ul>
+      <li>Atrasos do(a) avaliado(a) não implicam extensão do horário;</li>
+      <li>Cancelamentos/remarcações com antecedência mínima de 24 horas;</li>
+      <li>Faltas sem aviso prévio poderão implicar cobrança do horário reservado.</li>
+    </ul>
+    <div class="sec">5. Honorários</div>
+    <p><strong>Valor total do pacote: R$ 3.500,00</strong></p>
+    <ul>
+      <li>À vista via Pix com 5% de desconto: <strong>R$ 3.325,00</strong></li>
+      <li>Parcelamento em até 3x no cartão de crédito.</li>
+    </ul>
+    <p>O valor contempla entrevistas, aplicação dos instrumentos necessários, análise técnica, devolutiva clínica e laudo neuropsicológico.</p>
+    <div class="sec">6. Laudo Neuropsicológico</div>
+    <p>O laudo será elaborado com base exclusivamente nos dados obtidos durante a avaliação, observando critérios técnicos, científicos, éticos e normativas profissionais vigentes.</p>
+    <div class="sec">7. Sigilo e Proteção de Dados</div>
+    <p>As informações obtidas são protegidas pelo sigilo profissional, conforme Código de Ética Profissional do Psicólogo e legislação aplicável.</p>
+    <div class="sec">8. Consentimento</div>
+    <p>Ao firmar este acordo, o(a) paciente/avaliado(a) ou responsável legal declara compreender a natureza da avaliação, seus objetivos, limitações e condições financeiras.</p>
+    <table style="margin-top:16px">
+      ${docRow("Paciente / Avaliado(a)", n)}
+      ${docRow("Responsável Legal (se aplicável)", "")}
+      ${docRow("CPF", "")}
+      ${docRow("Data", "____/____/________")}
+    </table>
+    <div class="sign-area">
+      <div class="sign-box">_________________________________<br>Assinatura do(a) paciente/responsável</div>
+      <div class="sign-box">_________________________________<br>${PROF.nome} · ${PROF.crp}<br>Assinatura da profissional</div>
+    </div>
+    <div class="foot">Fortaleza – CE · ${today}</div>`;
+
+  if (tipo === "recibo") return `
+    ${docHeader("RECIBO DE PAGAMENTO", n)}
+    <div class="sec">Dados do Recibo</div>
+    <table>
+      ${docRow("Recibo nº", "")}
+      ${docRow("Data", today)}
+      ${docRow("Paciente / Pagante", n)}
+      ${docRow("CPF", "")}
+      ${docRow("Referente a", p.tipo_atendimento || "Avaliação Neuropsicológica")}
+      ${docRow("Sessão / Parcela nº", "")}
+      ${docRow("Valor recebido (R$)", "")}
+      ${docRow("Forma de pagamento", "")}
+    </table>
+    <div style="background:#EBF5FB;border:1px solid #AED6F1;border-radius:4px;padding:14px;margin:16px 0;text-align:center;">
+      <div style="font-size:9pt;color:#555;margin-bottom:4px">Recebi a importância de</div>
+      <div style="font-size:16pt;font-weight:700;color:#1B4F72">R$ ___________________</div>
+      <div style="font-size:8.5pt;color:#555;margin-top:4px">( ________________________________________ reais )</div>
+    </div>
+    <p style="font-size:8.5pt;color:#555">Referente à prestação de serviços psicológicos de <strong>${p.tipo_atendimento || "Avaliação Neuropsicológica"}</strong> ao(à) paciente <strong>${n}</strong>.</p>
+    <div class="sign-area">
+      <div class="sign-box">_________________________________<br>Pagante<br>${n}</div>
+      <div class="sign-box">_________________________________<br>${PROF.nome}<br>${PROF.crp}</div>
+    </div>
+    <div class="foot">Fortaleza – CE · ${today} · Este recibo é válido como comprovante de pagamento</div>`;
+
+  if (tipo === "evolucao") return `
+    ${docHeader("EVOLUÇÃO DE SESSÃO", n)}
+    <div class="sec">Dados da Sessão</div>
+    <table>
+      ${docRow("Paciente", n)}
+      ${docRow("Data da sessão", "")}
+      ${docRow("Nº da sessão", "")}
+      ${docRow("Duração", "")}
+      ${docRow("Modalidade", "")}
+    </table>
+    <div class="sec">Conteúdo da Sessão</div>
+    ${docField("Queixa / demanda trazida hoje", 3)}
+    ${docField("Conteúdo trabalhado na sessão", 4)}
+    ${docField("Intervenções realizadas", 3)}
+    ${docField("Reação do paciente", 2)}
+    <div class="sec">Avaliação e Conduta</div>
+    ${docField("Humor / estado geral na sessão", 1)}
+    ${docField("Progressos observados", 2)}
+    ${docField("Dificuldades", 2)}
+    ${docField("Conduta / próximos passos", 2)}
+    ${docField("Tarefas para próxima sessão", 2)}
+    <div class="sign-area">
+      <div class="sign-box">_________________________________<br>${PROF.nome}<br>${PROF.crp}</div>
+    </div>
+    <div class="foot">Documento clínico confidencial · LGPD · ${today}</div>`;
+
+  if (tipo === "laudo") return `
+    ${docHeader("LAUDO NEUROPSICOLÓGICO", n)}
+    <div class="sec">Dados de Identificação</div>
+    <table>
+      ${docRow("Paciente", n)}
+      ${docRow("Data de nascimento", nasc)}
+      ${docRow("Idade", "")}
+      ${docRow("Escolaridade", "")}
+      ${docRow("Profissão", "")}
+      ${docRow("Data do laudo", today)}
+      ${docRow("Finalidade do laudo", "")}
+      ${docRow("Destinatário", "")}
+    </table>
+    <div class="sec">Método</div>
+    ${docField("Período de avaliação", 1)}
+    ${docField("Número de sessões", 1)}
+    ${docField("Instrumentos utilizados", 4)}
+    ${docField("Fontes de informação", 2)}
+    <div class="sec">Histórico Clínico e Queixa</div>
+    ${docField("Queixa principal e histórico", 5)}
+    <div class="sec">Resultados e Análise</div>
+    ${docField("Resultados dos instrumentos aplicados", 8)}
+    <div class="sec">Aspectos Comportamentais Observados</div>
+    ${docField("Observações clínicas", 4)}
+    <div class="sec">Conclusão</div>
+    ${docField("Síntese diagnóstica", 4)}
+    ${docField("CID-11 / DSM-5 (se aplicável)", 1)}
+    ${docField("Recomendações", 3)}
+    ${docField("Encaminhamentos", 2)}
+    <div class="sign-area">
+      <div class="sign-box">_________________________________<br>${PROF.nome}<br>${PROF.crp}</div>
+    </div>
+    <div class="foot">Documento clínico confidencial · Uso restrito · LGPD · ${today}</div>`;
+
+  if (tipo === "relatorio") return `
+    ${docHeader("RELATÓRIO PSICOLÓGICO", n)}
+    <div class="sec">Dados de Identificação</div>
+    <table>
+      ${docRow("Paciente", n)}
+      ${docRow("Data de nascimento", nasc)}
+      ${docRow("Data do relatório", today)}
+      ${docRow("Tipo de relatório", "")}
+      ${docRow("Destinatário", "")}
+      ${docRow("Finalidade", "")}
+    </table>
+    <div class="sec">Introdução</div>
+    ${docField("Apresentação do caso e contexto de encaminhamento", 4)}
+    <div class="sec">Desenvolvimento</div>
+    ${docField("Achados, evolução e intervenções realizadas", 8)}
+    <div class="sec">Resultados</div>
+    ${docField("Resultados obtidos e análise técnica", 6)}
+    <div class="sec">Conclusão e Recomendações</div>
+    ${docField("Conclusão e recomendações", 4)}
+    <div class="sign-area">
+      <div class="sign-box">_________________________________<br>${PROF.nome}<br>${PROF.crp}</div>
+    </div>
+    <div class="foot">Documento clínico confidencial · LGPD · ${today}</div>`;
+
+  if (tipo === "declaracao") return `
+    ${docHeader("DECLARAÇÃO", n)}
+    <div class="sec">Dados</div>
+    <table>
+      ${docRow("Paciente", n)}
+      ${docRow("Data de nascimento", nasc)}
+      ${docRow("Tipo de declaração", "")}
+      ${docRow("Destinatário", "")}
+      ${docRow("Data", today)}
+    </table>
+    <div class="sec">Conteúdo</div>
+    ${docField("Declaro que o(a) paciente acima identificado(a):", 6)}
+    <div class="sign-area">
+      <div class="sign-box">_________________________________<br>${PROF.nome}<br>${PROF.crp}</div>
+    </div>
+    <div class="foot">Fortaleza – CE · ${today}</div>`;
+
+  // Default - anamnese/geral
+  return `
+    ${docHeader("FICHA DO PACIENTE", n)}
+    <div class="sec">Identificação</div>
+    <table>
+      ${docRow("Nome completo", n)}
+      ${docRow("Data de nascimento", nasc)}
+      ${docRow("Telefone", tel)}
+      ${docRow("E-mail", p.email||"—")}
+      ${docRow("Sexo", p.sexo||"—")}
+      ${docRow("Tipo de atendimento", p.tipo_atendimento||"—")}
+      ${docRow("Encaminhamento", p.encaminhamento||"—")}
+      ${docRow("Status", labelStatus(p.status))}
+    </table>
+    ${docField("Observações", 4)}
+    <div class="sign-area">
+      <div class="sign-box">_________________________________<br>${PROF.nome}<br>${PROF.crp}</div>
+    </div>`;
+}
+
 function exportarDocPaciente(tipo) {
   const p = currentPaciente;
-  const today = new Date().toLocaleDateString("pt-BR");
-  let content = "";
-
-  const base = `
-    <div style="background:#1B4F72;color:#fff;padding:10px 14px;margin-bottom:10px;">
-      <h1 style="font-size:13pt;font-family:Georgia,serif">${PROF.nome} · ${PROF.crp}</h1>
-      <p style="font-size:8pt;color:#AED6F1">${tipo.toUpperCase()} · Paciente: ${p.nome} · Data: ${today}</p>
-    </div>`;
-
   if (tipo === "programacao") { exportarProgDoc(p); return; }
-
-  content = base + `
-    <table style="width:100%;border-collapse:collapse">
-      <tr><td style="background:#EBF5FB;border:.5px solid #AED6F1;padding:5px 8px;font-weight:600;font-size:8pt;width:35%">Paciente</td><td style="border:.5px solid #AED6F1;padding:5px 8px;font-size:8.5pt">${p.nome}</td></tr>
-      <tr><td style="background:#EBF5FB;border:.5px solid #AED6F1;padding:5px 8px;font-weight:600;font-size:8pt">Data de nascimento</td><td style="border:.5px solid #AED6F1;padding:5px 8px;font-size:8.5pt">${formatDate(p.data_nascimento)}</td></tr>
-      <tr><td style="background:#EBF5FB;border:.5px solid #AED6F1;padding:5px 8px;font-weight:600;font-size:8pt">Telefone</td><td style="border:.5px solid #AED6F1;padding:5px 8px;font-size:8.5pt">${p.telefone||"—"}</td></tr>
-      <tr><td style="background:#EBF5FB;border:.5px solid #AED6F1;padding:5px 8px;font-weight:600;font-size:8pt">Tipo de atendimento</td><td style="border:.5px solid #AED6F1;padding:5px 8px;font-size:8.5pt">${p.tipo_atendimento||"—"}</td></tr>
-    </table>
-    <div style="margin-top:40px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;color:#777">
-      Assinatura: _________________________________ &nbsp; ${PROF.crp}
-    </div>`;
-
   logAudit("exportar", "documentos", `Documento "${tipo}" exportado para paciente: ${p.nome}`);
+  const docContent = gerarDocHTML(tipo, p);
+  const labels = {tcle:"TCLE",contrato:"Contrato",acordo:"Acordo de Serviços",recibo:"Recibo",evolucao:"Evolução",laudo:"Laudo",relatorio:"Relatório",declaracao:"Declaração",anamnese:"Ficha do Paciente"};
+  const titulo = labels[tipo] || tipo;
   const win = window.open("","_blank");
-  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${tipo} – ${p.nome}</title>
-    <style>body{font-family:Arial,sans-serif;font-size:9pt;margin:1.5cm 2cm;}@page{size:A4;margin:14mm 16mm;}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style>
-    <script>window.onload=function(){window.print();}<\/script></head><body>${content}</body></html>`);
+  if (!win) { showToast("Permita pop-ups para exportar.", "error"); return; }
+  win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>${titulo} – ${p.nome}</title>
+    <style>${docStyles()}</style>
+    <script>window.onload=function(){window.print();}<\/script>
+    </head><body>${docContent}</body></html>`);
   win.document.close();
 }
 
@@ -1202,13 +1497,6 @@ function showToast(msg, type = "") {
 }
 
 // ── SERVICE WORKER ──
-if ("serviceWorker" in navigator) {
-  const sw = `const C="clinica-v2";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["."])));self.skipWaiting();});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim();});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>caches.match("."))));});`;
-  navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"text/javascript"}))).catch(()=>{});
-}
-
-window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); e.prompt(); });
-
 // ── PASSWORD TOGGLE ──
 function togglePass(inputId, btn) {
   const inp = document.getElementById(inputId);
@@ -1397,7 +1685,267 @@ function exportarAuditoria() {
   win.document.close();
 }
 
+
+if ("serviceWorker" in navigator) {
+  const sw = `const C="clinica-v2";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["."])));self.skipWaiting();});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim();});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>caches.match("."))));});`;
+  navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"text/javascript"}))).catch(()=>{});
+}
+
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); e.prompt(); });
+
 // ── BOOT ──
+// ── PHONE MASK ──
+function maskPhone(input) {
+  let v = input.value.replace(/\D/g, "");
+  if (v.length <= 10) {
+    v = v.replace(/^(\d{2})(\d{4})(\d{0,4})/, "$1- $2-$3");
+  } else {
+    v = v.replace(/^(\d{2})(\d{1})(\d{4})(\d{0,4})/, "$1- $2 $3-$4");
+  }
+  input.value = v;
+}
+
+// ── EDIT AGENDA ──
+function editarAgendamento(id, pacId, data, horario, tipo, modal) {
+  document.getElementById("agendPac").value = pacId;
+  document.getElementById("agendData").value = data;
+  document.getElementById("agendHora").value = horario;
+  document.getElementById("agendTipo").value = tipo;
+  document.getElementById("agendModal").value = modal;
+  // Change save button to update
+  const btn = document.querySelector("#novoAgendModal .btn-primary");
+  btn.textContent = "Atualizar";
+  btn.onclick = () => atualizarAgendamento(id);
+  document.querySelector("#novoAgendModal .modal-title").textContent = "Editar Agendamento";
+  openModal("novoAgendModal");
+}
+
+async function atualizarAgendamento(id) {
+  const data = document.getElementById("agendData").value;
+  const hora = document.getElementById("agendHora").value;
+  if (!data || !hora) { showToast("Preencha data e horário!", "error"); return; }
+  try {
+    await sbFetch(`agendamentos?id=eq.${id}`, { method:"PATCH", body: JSON.stringify({
+      data, horario: hora,
+      tipo_sessao: document.getElementById("agendTipo").value,
+      modalidade: document.getElementById("agendModal").value,
+      observacoes: document.getElementById("agendObs").value,
+    }), prefer: "return=minimal"});
+    closeModal("novoAgendModal");
+    // Reset button
+    const btn = document.querySelector("#novoAgendModal .btn-primary");
+    btn.textContent = "Salvar"; btn.onclick = salvarAgendamento;
+    document.querySelector("#novoAgendModal .modal-title").textContent = "Novo Agendamento";
+    showToast("Agendamento atualizado!", "success");
+    logAudit("editar", "agenda", `Agendamento atualizado para ${data} às ${hora}`);
+    loadAgenda();
+  } catch(e) { showToast("Erro ao atualizar.", "error"); }
+}
+
+async function excluirAgendamento(id) {
+  if (!confirm("Excluir este agendamento?")) return;
+  try {
+    await sbFetch(`agendamentos?id=eq.${id}`, { method:"DELETE", prefer:"" });
+    showToast("Agendamento excluído.", "success");
+    logAudit("excluir", "agenda", "Agendamento excluído");
+    loadAgenda();
+  } catch(e) { showToast("Erro ao excluir.", "error"); }
+}
+
+// ── FINANCEIRO ──
+async function loadFinanceiro(c, p) {
+  c.innerHTML = `<div class="loading"><div class="spinner"></div></div>`;
+  try {
+    const pags = await sbFetch(`pagamentos?paciente_id=eq.${p.id}&select=*&order=created_at.desc`) || [];
+    const total = pags.reduce((s,pg) => s + parseFloat(pg.valor||0), 0);
+    c.innerHTML = `
+      <div class="prog-card" style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div>
+            <div style="font-family:'Crimson Pro',serif;font-size:16px;color:var(--gold)">Controle Financeiro</div>
+            <div style="font-size:10px;color:var(--text3)">${p.tipo_atendimento || "—"}</div>
+          </div>
+          <button class="btn-primary" onclick="openModalPag('${p.id}')">+ Registrar Pagamento</button>
+        </div>
+        ${infoRow("Paciente", p.nome)}
+        ${infoRow("Total recebido", "R$ " + total.toLocaleString("pt-BR", {minimumFractionDigits:2}))}
+        ${infoRow("Pacote padrão", "R$ 3.500,00")}
+        ${infoRow("Saldo", "R$ " + (3500 - total).toLocaleString("pt-BR", {minimumFractionDigits:2}))}
+      </div>
+      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.15em;margin-bottom:8px">Histórico de Pagamentos</div>
+      ${pags.length === 0 ? `<div class="empty-state"><div class="empty-icon">💰</div><div class="empty-text">Nenhum pagamento registrado</div></div>` :
+        pags.map(pg => `
+        <div class="agenda-item" style="margin-bottom:6px">
+          <div style="background:var(--green);color:white;border-radius:4px;padding:6px 10px;font-size:11px;font-weight:700;flex-shrink:0">✓</div>
+          <div style="flex:1">
+            <div style="font-size:13px;color:var(--text);font-weight:600">R$ ${parseFloat(pg.valor).toLocaleString("pt-BR",{minimumFractionDigits:2})}</div>
+            <div style="font-size:10px;color:var(--text3)">${formatDate(pg.data_pagamento)} · ${pg.forma_pagamento} · ${pg.descricao||""}</div>
+          </div>
+          <button class="btn-icon" onclick="gerarRecibo('${pg.id}')" title="Gerar recibo">🧾</button>
+        </div>`).join("")
+      }`;
+  } catch(e) {
+    c.innerHTML = `<div class="prog-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="font-family:'Crimson Pro',serif;font-size:16px;color:var(--gold)">Controle Financeiro</div>
+        <button class="btn-primary" onclick="openModalPag('${p.id}')">+ Registrar Pagamento</button>
+      </div>
+      ${infoRow("Paciente", p.nome)}
+      ${infoRow("Tipo de atendimento", p.tipo_atendimento||"—")}
+      <div style="margin-top:10px;padding:10px;background:var(--bg);border-radius:4px;border:1px solid var(--border);font-size:10px;color:var(--text3)">
+        Execute o SQL de pagamentos no Supabase para ativar o controle financeiro completo.
+      </div>
+    </div>`;
+  }
+}
+
+function openModalPag(pacId) {
+  // Create payment modal dynamically
+  const existing = document.getElementById("pagModal");
+  if (existing) existing.remove();
+  const modal = document.createElement("div");
+  modal.id = "pagModal";
+  modal.className = "modal-overlay open";
+  modal.innerHTML = `<div class="modal">
+    <div class="modal-head"><div class="modal-title">Registrar Pagamento</div><button class="modal-close" onclick="document.getElementById('pagModal').remove()">✕</button></div>
+    <div class="modal-body">
+      <div class="fg"><div class="flabel">Data do pagamento *</div><input class="finput" type="date" id="pagData" value="${new Date().toISOString().split('T')[0]}"/></div>
+      <div class="fg"><div class="flabel">Valor (R$) *</div><input class="finput" type="number" id="pagValor" placeholder="0,00" step="0.01"/></div>
+      <div class="fg"><div class="flabel">Forma de pagamento</div>
+        <select class="fselect" id="pagForma">
+          <option>PIX</option><option>Cartão de crédito</option><option>Cartão de débito</option><option>Dinheiro</option><option>Transferência</option>
+        </select>
+      </div>
+      <div class="fg"><div class="flabel">Descrição / Parcela</div><input class="finput" id="pagDesc" placeholder="Ex: 1ª parcela, sessão avulsa..."/></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-secondary" onclick="document.getElementById('pagModal').remove()">Cancelar</button>
+      <button class="btn-primary" onclick="salvarPagamento('${pacId}')">Dar Baixa</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+async function salvarPagamento(pacId) {
+  const valor = document.getElementById("pagValor").value;
+  const data = document.getElementById("pagData").value;
+  if (!valor || !data) { showToast("Preencha valor e data!", "error"); return; }
+  try {
+    await sbFetch("pagamentos", { method:"POST", body: JSON.stringify({
+      paciente_id: pacId,
+      data_pagamento: data,
+      valor: parseFloat(valor),
+      forma_pagamento: document.getElementById("pagForma").value,
+      descricao: document.getElementById("pagDesc").value,
+    })});
+    document.getElementById("pagModal").remove();
+    showToast("Pagamento registrado! ✓", "success");
+    logAudit("criar", "financeiro", `Pagamento de R$ ${valor} registrado`);
+    showPacTab("financeiro");
+  } catch(e) { showToast("Execute o SQL de pagamentos no Supabase primeiro.", "error"); }
+}
+
+// ── WHATSAPP LEMBRETE ──
+function enviarWhatsApp(nome, data, horario, tipo) {
+  const primeiroNome = nome.split(" ")[0] || "paciente";
+  
+  // Format date nicely
+  let dataFormatada = data;
+  try {
+    const d = new Date(data + "T12:00:00");
+    const dias = ["domingo","segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado"];
+    dataFormatada = `${dias[d.getDay()]}, ${d.getDate().toString().padStart(2,"0")}/${(d.getMonth()+1).toString().padStart(2,"0")}/${d.getFullYear()}`;
+  } catch(e) {}
+
+  // Format time
+  let horarioFormatado = horario;
+  try {
+    const [h, m] = horario.split(":");
+    horarioFormatado = `${h}h${m !== "00" ? m : ""}`;
+  } catch(e) {}
+
+  const mensagem = `Olá, ${primeiroNome}! 😊
+
+Passando para lembrar da sua consulta:
+
+📅 *${dataFormatada}*
+⏰ *${horarioFormatado}*
+📋 ${tipo || "Consulta"}
+
+Caso precise remarcar, entre em contato com antecedência mínima de 24 horas.
+
+Até lá! 🌿
+*Eveline Mourão – Psicóloga | CRP 11/24832*`;
+
+  // Show modal to choose: send to patient or to professional
+  const existing = document.getElementById("waModal");
+  if (existing) existing.remove();
+
+  const modal = document.createElement("div");
+  modal.id = "waModal";
+  modal.className = "modal-overlay open";
+  modal.innerHTML = `
+    <div class="modal" style="max-width:420px">
+      <div class="modal-head">
+        <div class="modal-title" style="color:#25d366">📲 Enviar Lembrete WhatsApp</div>
+        <button class="modal-close" onclick="document.getElementById('waModal').remove()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:16px;font-size:11px;color:var(--text2);white-space:pre-wrap;line-height:1.6">${mensagem}</div>
+        <div class="fg">
+          <div class="flabel">Número do WhatsApp do paciente</div>
+          <input class="finput" id="waTelPac" placeholder="5588999999999" style="font-size:14px"/>
+          <div style="font-size:9px;color:var(--text3);margin-top:4px">Digite com código do país: 55 + DDD + número (sem espaços ou traços)</div>
+        </div>
+      </div>
+      <div class="modal-foot" style="flex-direction:column;gap:8px">
+        <button class="btn-primary" style="width:100%;background:#25d366;font-size:12px" onclick="abrirWhatsApp(${JSON.stringify(mensagem).replace(/'/g,"\'")})">
+          📲 Abrir WhatsApp e Enviar
+        </button>
+        <button class="btn-secondary" style="width:100%" onclick="document.getElementById('waModal').remove()">Cancelar</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+function abrirWhatsApp(mensagem) {
+  const tel = document.getElementById("waTelPac")?.value?.replace(/\D/g,"") || "";
+  const msg = encodeURIComponent(mensagem);
+  const url = tel 
+    ? `https://wa.me/${tel}?text=${msg}` 
+    : `https://wa.me/?text=${msg}`;
+  window.open(url, "_blank");
+  document.getElementById("waModal")?.remove();
+}
+
+// ── ALARM CHECK (runs every minute) ──
+function checkAlarms() {
+  if (!agendamentos.length) return;
+  const now = new Date();
+  agendamentos.forEach(a => {
+    try {
+      const sessao = new Date(`${a.data}T${a.horario}`);
+      const diff = (sessao - now) / 60000; // minutes
+      if (diff > 118 && diff < 122) { // ~2 hours before
+        const pac = pacientes.find(p => p.id === a.paciente_id);
+        const nome = pac?.nome || a.pacientes?.nome || "Paciente";
+        const alarmKey = `alarm_${a.id}_${a.data}`;
+        if (!localStorage.getItem(alarmKey)) {
+          localStorage.setItem(alarmKey, "sent");
+          showToast(`🔔 Consulta de ${nome} em 2 horas! (${a.horario})`, "success");
+          // Offer WhatsApp
+          setTimeout(() => {
+            if (confirm(`🔔 Lembrete: Consulta de ${nome} às ${a.horario}\n\nDeseja enviar lembrete por WhatsApp?`)) {
+              enviarWhatsApp(nome, a.data, a.horario, a.tipo_sessao);
+            }
+          }, 1000);
+        }
+      }
+    } catch(e) {}
+  });
+}
+setInterval(checkAlarms, 60000); // check every minute
+
 // Pre-fill saved email
 const savedEmail = localStorage.getItem("saved_email");
 if (savedEmail) {
